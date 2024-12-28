@@ -426,5 +426,26 @@ if uploaded_file is not None:
     upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
 
+    if st.button("下载分析结果为 PDF"):
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+
+        # 设置支持中文的字体路径
+        font_path = "SimHei.ttf"  # 确保 SimHei.ttf 文件存在
+        pdf.add_font("SimHei", fname=font_path, uni=True)
+        pdf.set_font("SimHei", size=12)
+
+        # 添加内容
+        pdf.cell(200, 10, txt=f"{csv_file_name} 分析结果", ln=True, align="C")
+        pdf.cell(200, 10, txt="这里是PDF的内容示例...", ln=True, align="L")
+
+        # 保存 PDF 文件
+        pdf_file_name = f"{csv_file_name}_分析结果.pdf"
+        pdf.output(pdf_file_name)
+        st.success(f"PDF 文件已生成：{pdf_file_name}")
+    except Exception as e:
+        st.error(f"生成 PDF 文件时出错：{e}")
+    
     # 提示保存
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

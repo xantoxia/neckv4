@@ -25,17 +25,17 @@ from fpdf import FPDF
 token = os.getenv("GITHUB_TOKEN")
 g = Github(token)
 if not token:
-    print("GITHUB_TOKEN 未正确设置，请检查环境变量！")
+    st.write("GITHUB_TOKEN 未正确设置，请检查环境变量！")
 else:
-    print("GITHUB_TOKEN 已正确加载。")
+    st.write("GITHUB_TOKEN 已正确加载。")
 
 # 测试访问仓库
 try:
     repo = g.get_repo("xantoxia/neck3")
-    print(f"成功访问仓库：{repo.name}")
-    print(f"仓库权限：{repo.permissions}")
+    st.write(f"成功访问仓库：{repo.name}")
+    st.write(f"仓库权限：{repo.permissions}")
 except Exception as e:
-    print(f"访问仓库失败：{e}")
+    st.write(f"访问仓库失败：{e}")
 
 # GitHub 配置
 repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库

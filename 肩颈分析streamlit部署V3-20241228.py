@@ -30,7 +30,7 @@ else:
     print("GITHUB_TOKEN 已正确加载。")
 
 # GitHub 配置
-repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neck3/"  # 替换为你的 GitHub 仓库
 models_folder = "models/"  # GitHub 仓库中模型文件存储路径
 latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
@@ -425,59 +425,6 @@ if uploaded_file is not None:
         f.write(model_filename)
     upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
-
-if st.button("下载分析结果为 PDF"):
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-
-        # 设置字体
-        font_path = "SimHei.ttf"
-        pdf.add_font("SimHei", fname=font_path, uni=True)
-        pdf.set_font("SimHei", size=12)
-
-        # 添加标题
-        pdf.cell(200, 10, txt=f"{csv_file_name} 分析结果", ln=True, align="C")
-        
-        # 写入数据预览
-        pdf.ln(10)  # 换行
-        pdf.set_font("SimHei", size=10)
-        pdf.cell(200, 10, txt="1. 数据预览", ln=True, align="L")
-        
-        # 遍历数据并写入表格
-        for index, row in data_reset.head(10).iterrows():  # 示例只写入前10行
-            pdf.cell(0, 10, txt=f"{index}: {list(row)}", ln=True)
-        
-        # 写入统计分析结果
-        pdf.ln(10)
-        pdf.set_font("SimHei", size=10)
-        pdf.cell(200, 10, txt="2. 数据统计分析", ln=True, align="L")
-        stats = data.describe()
-        for column in stats.columns:
-            pdf.cell(0, 10, txt=f"{column}: 平均值={stats[column]['mean']:.2f}, 最小值={stats[column]['min']:.2f}, 最大值={stats[column]['max']:.2f}", ln=True)
-
-        # 写入动态结论
-        pdf.ln(10)
-        pdf.cell(200, 10, txt="3. 动态分析结论", ln=True, align="L")
-        pdf.cell(0, 10, txt=f"- 颈部角度范围：{stats['颈部角度(°)']['min']}° 至 {stats['颈部角度(°)']['max']}°", ln=True)
-        pdf.cell(0, 10, txt=f"- 肩部旋转角度标准差为 {stats['肩部旋转角度(°)']['std']:.2f}", ln=True)
-
-        # 保存到临时路径
-        pdf_file_path = f"/tmp/{csv_file_name}_分析结果.pdf"
-        pdf.output(pdf_file_path)
-
-        # 提供下载
-        with open(pdf_file_path, "rb") as pdf_file:
-            pdf_bytes = pdf_file.read()
-            st.download_button(
-                label="下载分析结果为 PDF",
-                data=pdf_bytes,
-                file_name=f"{csv_file_name}_分析结果.pdf",
-                mime="application/pdf"
-            )
-    except Exception as e:
-        st.error(f"生成或下载 PDF 文件时出错：{e}")
-
 
     # 提示保存
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

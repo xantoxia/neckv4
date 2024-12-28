@@ -409,6 +409,11 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
+
+
+    # 动态读取Token
+    token = os.getenv("GITHUB_TOKEN")
+    g = Github(token)
     
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"

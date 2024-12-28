@@ -27,15 +27,7 @@ g = Github(token)
 if not token:
     st.write("GITHUB_TOKEN 未正确设置，请检查环境变量！")
 else:
-    st.write("GITHUB_TOKEN 已正确加载。")
-
-# 测试访问仓库
-try:
-    repo = g.get_repo("xantoxia/neck3")
-    st.write(f"成功访问仓库：{repo.name}")
-    st.write(f"仓库权限：{repo.permissions}")
-except Exception as e:
-    st.write(f"访问仓库失败：{e}")
+    print("GITHUB_TOKEN 已正确加载。")
 
 # GitHub 配置
 repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库

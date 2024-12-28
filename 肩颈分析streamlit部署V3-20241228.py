@@ -93,7 +93,7 @@ st.title("肩颈角度分析与异常检测")
 st.write("本人因AI工具结合规则与机器学习模型，可以自动检测异常作业姿势并提供可视化分析。")
 
 # 模板下载
-with open("肩颈角度数据模版.csv", "rb") as file:
+with open("肩颈角度数据模版-V3.csv", "rb") as file:
     st.download_button(
         label="下载 CSV 模板",
         data=file,
@@ -112,8 +112,8 @@ if uploaded_file is not None:
 
     # 读取数据
     data = pd.read_csv(uploaded_file)
-    data.columns = ['天(d)', '时间(s)', '颈部角度(°)', '肩部上举角度(°)', 
-                    '肩部外展/内收角度(°)', '肩部旋转角度(°)']
+    data.columns = ['时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
+                    '肩部外展角度(°)', '肩部旋转角度(°)']
     st.write("### 1.1  数据预览")
     
     # 调整序号显示，从 1 开始
@@ -133,14 +133,14 @@ if uploaded_file is not None:
         st.write("### 1.3  动态分析结论：数据统计特性")
         st.write(f"- 颈部角度范围：{stats['颈部角度(°)']['min']}° 至 {stats['颈部角度(°)']['max']}°，平均值为 {stats['颈部角度(°)']['mean']:.2f}°")
         st.write(f"- 肩部旋转角度范围：{stats['肩部旋转角度(°)']['min']}° 至 {stats['肩部旋转角度(°)']['max']}°，平均值为 {stats['肩部旋转角度(°)']['mean']:.2f}°")
-        st.write(f"- 肩部外展/内收角度的标准差为 {stats['肩部外展/内收角度(°)']['std']:.2f}，波动较 {'大' if stats['肩部外展/内收角度(°)']['std'] > 15 else '小'}。")
+        st.write(f"- 肩部外展角度的标准差为 {stats['肩部外展角度(°)']['std']:.2f}，波动较 {'大' if stats['肩部外展角度(°)']['std'] > 15 else '小'}。")
 
     # 3D 散点图
     def generate_3d_scatter(data):
         st.write("### 2.1  肩颈角度3D可视化散点图")
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(111, projection='3d')
-        scatter = ax.scatter(data['时间(s)'], data['颈部角度(°)'], data['肩部旋转角度(°)'], c=data['肩部外展/内收角度(°)'], cmap='viridis')
+        scatter = ax.scatter(data['时间(s)'], data['颈部角度(°)'], data['肩部旋转角度(°)'], c=data['肩部外展角度(°)'], cmap='viridis')
         ax.set_xlabel('时间(s)', fontproperties=simhei_font)
         ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
         ax.set_zlabel('肩部旋转角度(°)', fontproperties=simhei_font)
@@ -148,7 +148,7 @@ if uploaded_file is not None:
 
         # 修改 colorbar 的 label 字体
         cbar = fig.colorbar(scatter, ax=ax)
-        cbar.set_label('肩部外展/内收角度(°)', fontproperties=simhei_font)
+        cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
         
         st.pyplot(fig)
         
@@ -173,7 +173,7 @@ if uploaded_file is not None:
         st.write("### 2.2 肩颈角度相关性热力图")
 
         # 计算相关性矩阵
-        corr = data[['颈部角度(°)', '肩部上举角度(°)', '肩部外展/内收角度(°)', '肩部旋转角度(°)']].corr()
+        corr = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']].corr()
 
         # 创建绘图
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -189,15 +189,15 @@ if uploaded_file is not None:
 
         # 相关性热力图分析结论
         st.write("\n**动态分析结论：相关性热力图**")
-        if corr['颈部角度(°)']['肩部上举角度(°)'] > 0.5:
-            st.write("- 颈部角度与肩部上举角度高度正相关，动作之间可能存在协同性。")
-        elif 0 < corr['颈部角度(°)']['肩部上举角度(°)'] <= 0.5:
-            st.write("- 颈部角度与肩部上举角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
+        if corr['颈部角度(°)']['肩部前屈角度(°)'] > 0.5:
+            st.write("- 颈部角度与肩部前屈角度高度正相关，动作之间可能存在协同性。")
+        elif 0 < corr['颈部角度(°)']['肩部前屈角度(°)'] <= 0.5:
+            st.write("- 颈部角度与肩部前屈角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
 
-        if corr['肩部旋转角度(°)']['肩部外展/内收角度(°)'] < 0:
-            st.write("- 肩部旋转与外展/内收角度存在负相关，可能是补偿动作的表现。")
-        elif 0 <= corr['肩部旋转角度(°)']['肩部外展/内收角度(°)'] <= 0.5:
-            st.write("- 肩部旋转与外展/内收角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
+        if corr['肩部旋转角度(°)']['肩部外展角度(°)'] < 0:
+            st.write("- 肩部旋转与外展角度存在负相关，可能是补偿动作的表现。")
+        elif 0 <= corr['肩部旋转角度(°)']['肩部外展角度(°)'] <= 0.5:
+            st.write("- 肩部旋转与外展角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):
@@ -264,8 +264,8 @@ if uploaded_file is not None:
             elif row['肩部旋转角度(°)'] > shoulder_threshold:
                 rule_based_conclusion = "肩部旋转角度异常"
 
-            ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部上举角度(°)'], 
-                                                      row['肩部外展/内收角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
+            ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部前屈角度(°)'], 
+                                                      row['肩部外展角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
 
             if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
@@ -291,8 +291,8 @@ if uploaded_file is not None:
                     elif row['肩部旋转角度(°)'] > shoulder_threshold:
                         rule_based_conclusion = "肩部旋转角度异常"
 
-                    ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部上举角度(°)'], 
-                                                              row['肩部外展/内收角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
+                    ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部前屈角度(°)'], 
+                                                              row['肩部外展角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
 
                     if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                         st.write(f"- 第 {index+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
@@ -315,8 +315,8 @@ if uploaded_file is not None:
             elif row['肩部旋转角度(°)'] > shoulder_threshold:
                 rule_based_conclusion = "肩部旋转角度异常"
 
-            ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部上举角度(°)'], 
-                                                      row['肩部外展/内收角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
+            ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部前屈角度(°)'], 
+                                                      row['肩部外展角度(°)'], row['肩部旋转角度(°)']]])[0] == 1 else "正常"
 
             if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
@@ -345,7 +345,7 @@ if uploaded_file is not None:
         st.write("未加载到模型，训练新模型...")
 
     # 模型训练或重新训练
-    X = data[['颈部角度(°)', '肩部上举角度(°)', '肩部外展/内收角度(°)', '肩部旋转角度(°)']]
+    X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']]
     if 'Label' not in data.columns:
         np.random.seed(42)
         data['Label'] = np.random.choice([0, 1], size=len(data))

@@ -29,6 +29,14 @@ if not token:
 else:
     print("GITHUB_TOKEN 已正确加载。")
 
+# 测试访问仓库
+try:
+    repo = g.get_repo("xantoxia/neck3")
+    print(f"成功访问仓库：{repo.name}")
+    print(f"仓库权限：{repo.permissions}")
+except Exception as e:
+    print(f"访问仓库失败：{e}")
+
 # GitHub 配置
 repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
 models_folder = "models/"  # GitHub 仓库中模型文件存储路径

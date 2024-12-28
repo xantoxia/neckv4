@@ -12,25 +12,21 @@ import seaborn as sns
 import streamlit as st
 import time
 import os
-import pdfkit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, roc_curve, auc
 from joblib import dump, load
 from matplotlib import font_manager
 from github import Github
-from fpdf import FPDF
 
 # 动态读取Token
 token = os.getenv("GITHUB_TOKEN")
-g = Github(token)
 if not token:
-    st.write("GITHUB_TOKEN 未正确设置，请检查环境变量！")
-else:
-    print("GITHUB_TOKEN 已正确加载。")
+    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
+    st.stop()
 
 # GitHub 配置
-repo_name = "xantoxia/neck3/"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
 models_folder = "models/"  # GitHub 仓库中模型文件存储路径
 latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
@@ -91,11 +87,11 @@ plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
 plt.rcParams['axes.unicode_minus'] = False  # 修复负号显示问题
 
 # Streamlit 标题
-st.title("肩颈角度分析与异常检测")
+st.title("肩颈角度自动分析与异常检测")
 st.write("本人因AI工具结合规则与机器学习模型，可以自动检测异常作业姿势并提供可视化分析。")
 
 # 模板下载
-with open("肩颈角度数据模版 - V3.csv", "rb") as file:
+with open("肩颈角度数据模版 -V3 .csv", "rb") as file:
     st.download_button(
         label="下载 CSV 模板",
         data=file,
@@ -107,9 +103,10 @@ with open("肩颈角度数据模版 - V3.csv", "rb") as file:
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
 if uploaded_file is not None:
+
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
-     # 使用 HTML 格式设置字体颜色为蓝色
+    # 使用 HTML 格式设置字体颜色为蓝色
     st.markdown(f"<h3 style='color:blue;'>{csv_file_name} 肩颈作业姿势分析</h3>", unsafe_allow_html=True)
 
     # 读取数据
@@ -168,7 +165,7 @@ if uploaded_file is not None:
             st.write("- 肩部旋转角度的波动性较大，动作可能不稳定。")
 
         if data['肩部外展角度(°)'].mean() > 20:
-            st.write("- 肩部外展角度的整体幅度较大，作业强度可能较高。")
+            st.write("- 肩部外展角度的整体幅度较大，运动强度可能较高。")
 
     # 相关性热力图
     def generate_correlation_heatmap(data):
@@ -197,9 +194,9 @@ if uploaded_file is not None:
             st.write("- 颈部角度与肩部前屈角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
 
         if corr['肩部旋转角度(°)']['肩部外展角度(°)'] < 0:
-            st.write("- 肩部旋转与外展角度存在负相关，可能是补偿动作的表现。")
+            st.write("- 肩部旋转与外展/内收角度存在负相关，可能是补偿动作的表现。")
         elif 0 <= corr['肩部旋转角度(°)']['肩部外展角度(°)'] <= 0.5:
-            st.write("- 肩部旋转与外展角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
+            st.write("- 肩部旋转与外展/内收角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):
@@ -275,9 +272,6 @@ if uploaded_file is not None:
             elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
                 abnormal_indices.append(index)
-            elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
-                st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
-                abnormal_indices.append(index)
             else:
                 st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
 
@@ -302,9 +296,6 @@ if uploaded_file is not None:
                     elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                         st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
                         abnormal_indices.append(index)
-                    elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
-                        st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
-                        abnormal_indices.append(index)
                     else:
                         st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
@@ -325,9 +316,6 @@ if uploaded_file is not None:
                 abnormal_indices.append(index)
             elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
-                abnormal_indices.append(index)
-            elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
-                st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                 abnormal_indices.append(index)
             else:
                 st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
@@ -409,7 +397,7 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
-
+    
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"
     dump(model, local_model_path)
@@ -425,6 +413,6 @@ if uploaded_file is not None:
         f.write(model_filename)
     upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
-
-    # 提示保存
+    
+    st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

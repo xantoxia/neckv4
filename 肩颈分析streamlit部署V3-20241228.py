@@ -431,21 +431,30 @@ if st.button("下载分析结果为 PDF"):
         pdf = FPDF()
         pdf.add_page()
 
-        # 设置支持中文的字体路径
-        font_path = "SimHei.ttf"  # 确保 SimHei.ttf 文件存在
+        # 设置字体
+        font_path = "SimHei.ttf"
         pdf.add_font("SimHei", fname=font_path, uni=True)
         pdf.set_font("SimHei", size=12)
 
         # 添加内容
         pdf.cell(200, 10, txt=f"{csv_file_name} 分析结果", ln=True, align="C")
-        pdf.cell(200, 10, txt="这里是PDF的内容示例...", ln=True, align="L")
+        pdf.cell(200, 10, txt="这里是 PDF 的内容示例...", ln=True, align="L")
 
-        # 保存 PDF 文件
-        pdf_file_name = f"{csv_file_name}_分析结果.pdf"
-        pdf.output(pdf_file_name)
-        st.success(f"PDF 文件已生成：{pdf_file_name}")
+        # 保存到临时路径
+        pdf_file_path = f"/tmp/{csv_file_name}_分析结果.pdf"
+        pdf.output(pdf_file_path)
+
+        # 提供下载
+        with open(pdf_file_path, "rb") as pdf_file:
+            pdf_bytes = pdf_file.read()
+            st.download_button(
+                label="下载分析结果为 PDF",
+                data=pdf_bytes,
+                file_name=f"{csv_file_name}_分析结果.pdf",
+                mime="application/pdf"
+            )
     except Exception as e:
-        st.error(f"生成 PDF 文件时出错：{e}")
-    
+        st.error(f"生成或下载 PDF 文件时出错：{e}")
+
     # 提示保存
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

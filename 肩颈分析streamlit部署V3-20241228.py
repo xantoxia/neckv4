@@ -426,7 +426,7 @@ if uploaded_file is not None:
     upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
 
-    if st.button("下载分析结果为 PDF"):
+if st.button("下载分析结果为 PDF"):
     try:
         pdf = FPDF()
         pdf.add_page()

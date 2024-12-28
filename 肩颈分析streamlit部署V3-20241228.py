@@ -28,7 +28,7 @@ if not token:
     st.stop()
 
 # GitHub 配置
-repo_name = "xantoxia/neck"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
 models_folder = "models/"  # GitHub 仓库中模型文件存储路径
 latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息

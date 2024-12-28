@@ -91,7 +91,7 @@ st.title("肩颈角度自动分析与异常检测")
 st.write("本人因AI工具结合规则与机器学习模型，可以自动检测异常作业姿势并提供可视化分析。")
 
 # 模板下载
-with open("肩颈角度数据模版 -V3.csv", "rb") as file:
+with open("肩颈角度数据模版 - V3.csv", "rb") as file:
     st.download_button(
         label="下载 CSV 模板",
         data=file,

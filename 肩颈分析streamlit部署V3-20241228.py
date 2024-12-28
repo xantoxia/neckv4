@@ -23,9 +23,11 @@ from fpdf import FPDF
 
 # 动态读取Token
 token = os.getenv("GITHUB_TOKEN")
+g = Github(token)
 if not token:
-    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
-    st.stop()
+    print("GITHUB_TOKEN 未正确设置，请检查环境变量！")
+else:
+    print("GITHUB_TOKEN 已正确加载。")
 
 # GitHub 配置
 repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库

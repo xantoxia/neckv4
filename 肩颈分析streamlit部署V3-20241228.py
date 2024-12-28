@@ -165,8 +165,8 @@ if uploaded_file is not None:
         else:
             st.write("- 肩部旋转角度的波动性较大，动作可能不稳定。")
 
-        if data['肩部外展/内收角度(°)'].mean() > 20:
-            st.write("- 肩部外展/内收角度的整体幅度较大，运动强度可能较高。")
+        if data['肩部外展角度(°)'].mean() > 20:
+            st.write("- 肩部外展角度的整体幅度较大，作业强度可能较高。")
 
     # 相关性热力图
     def generate_correlation_heatmap(data):

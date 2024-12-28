@@ -425,11 +425,6 @@ if uploaded_file is not None:
         f.write(model_filename)
     upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
-    
-if st.button("下载分析结果为 PDF"):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="分析结果", ln=True, align="C")
-    pdf.output(f"{csv_file_name}_分析结果.pdf")
-    st.success("PDF 已生成并可供下载。")
+
+    # 提示保存
+    st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

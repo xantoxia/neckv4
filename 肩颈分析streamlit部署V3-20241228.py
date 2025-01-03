@@ -149,39 +149,64 @@ if uploaded_file is not None:
     # 3D 散点图
     def generate_3d_scatter(data):
         st.write("### 2.1  肩颈角度3D可视化散点图")
-        fig = plt.figure(figsize=(10, 7))
-        ax = fig.add_subplot(111, projection='3d')
-        scatter = ax.scatter(data['时间(s)'], data['颈部角度(°)'], data['肩部前屈角度(°)'], c=data['肩部外展角度(°)'], cmap='viridis')
-        ax.set_xlabel('时间(s)', fontproperties=simhei_font)
-        ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
-        ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
-        plt.title('肩颈角度3D可视化散点图', fontproperties=simhei_font)
-
-        # 修改 colorbar 的 label 字体
-        cbar = fig.colorbar(scatter, ax=ax)
-        cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
+    
+    # 按 '工站(w)' 分组
+        grouped = data.groupby('工站(w)')
+    
+    # 遍历每个工站的数据
+        for station, group_data in grouped:
+            st.write(f"#### 工站 {station} 的3D散点图")
         
-        st.pyplot(fig)
+        # 创建图形
+            fig = plt.figure(figsize=(10, 7))
+            ax = fig.add_subplot(111, projection='3d')
         
-        # 3D 散点图分析结论
-        st.write("\n**动态分析结论：3D可视化散点图**")
-
-        neck_Flexion_max = data['颈部角度(°)'].max()
-        if data['颈部角度(°)'].max() < 20:
-            st.write("- 颈部角度处于20°之内，MSD风险较低。")
-        elif 20 <= neck_Flexion_max <= 40:
-            st.write("- 部分时间点颈部角度超过 20°，存在一定MSD风险。")
-        else:
-            st.write("- 部分时间点颈部角度超过 40°，请注意可能存在极端动作。")
+        # 绘制散点图
+            scatter = ax.scatter(
+                group_data['时间(s)'], 
+                group_data['颈部角度(°)'], 
+                group_data['肩部前屈角度(°)'], 
+                c=group_data['肩部外展角度(°)'], 
+                cmap='viridis'
+            )
         
-        shoulder_Flexion_max = data['肩部前屈角度(°)'].max()
-        if shoulder_Flexion_max < 15:
-            st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
-        elif 45 <= shoulder_Flexion_max:
-            st.write("- 部分时间点肩部前屈角度大于45°，请注意作业是否有手部支撑。")
+        # 设置坐标轴标签
+            ax.set_xlabel('时间(s)', fontproperties=simhei_font)
+            ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
+            ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
+        
+        # 设置标题
+            plt.title(f'工站 {station} 肩颈角度3D可视化散点图', fontproperties=simhei_font)
+        
+        # 添加 colorbar
+            cbar = fig.colorbar(scatter, ax=ax)
+            cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
+        
+        # 显示图形
+            st.pyplot(fig)
+        
+        # 动态分析结论
+            st.write(f"**工站 {station} 的动态分析结论：**")
+            neck_Flexion_max = group_data['颈部角度(°)'].max()
+            if neck_Flexion_max < 20:
+                st.write("- 颈部角度处于20°之内，MSD风险较低。")
+            elif 20 <= neck_Flexion_max <= 40:
+                st.write("- 部分时间点颈部角度超过 20°，存在一定MSD风险。")
+            else:
+                st.write("- 部分时间点颈部角度超过 40°，请注意可能存在极端动作。")
+        
+            shoulder_Flexion_max = group_data['肩部前屈角度(°)'].max()
+            if shoulder_Flexion_max < 15:
+                st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
+            elif shoulder_Flexion_max >= 45:
+                st.write("- 部分时间点肩部前屈角度大于45°，请注意作业时是否有手部支撑。")
 
-        if data['肩部外展角度(°)'].mean() > 20:
-            st.write("- 肩部外展角度的整体幅度较大，运动强度可能较高。")
+            if group_data['肩部外展角度(°)'].mean() > 20:
+                st.write("- 肩部外展角度的整体幅度较大，运动强度可能较高。")
+
+    # 调用函数
+    generate_3d_scatter(data)
+
 
     # 相关性热力图
     def generate_correlation_heatmap(data):

@@ -124,7 +124,7 @@ if uploaded_file is not None:
     def summarize_by_station(data):
         st.write("### 1.2  数据统计分析")
     
-    # 按 '工站(w)' 分组并计算统计特性
+        # 按 '工站(w)' 分组并计算统计特性
         station_summary = data.groupby('工站(w)').agg({
             '时间(s)': ['count'],
             '颈部角度(°)': ['mean', 'min', 'max', 'std'],
@@ -137,8 +137,14 @@ if uploaded_file is not None:
         station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
         station_summary.reset_index(inplace=True)
     
-        # 显示汇总统计结果
-        st.write(station_summary)
+        # 转置结果表
+        station_summary_transposed = station_summary.transpose()
+
+        # 修改转置后的列名（从1开始编号）
+        station_summary_transposed.columns = range(1, station_summary_transposed.shape[1] + 1)
+
+        # 显示汇总统计结果（转置后）
+        st.write(station_summary_transposed)
 
     # 调用函数
     summarize_by_station(data)

@@ -208,57 +208,48 @@ if uploaded_file is not None:
     generate_3d_scatter(data)
 
 
-    # 相关性热力图
-    def generate_correlation_heatmap(data):
-        st.write("### 2.2 肩颈角度相关性热力图")
-
-        # 计算相关性矩阵
-        corr = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']].corr()
+# 相关性热力图
+def generate_correlation_heatmap(data):
+    st.write("### 2.2 肩颈角度相关性热力图")
+    
+    # 按 '工站(w)' 分组
+    grouped = data.groupby('工站(w)')
+    
+    # 遍历每个工站的数据
+    for station, group_data in grouped:
+        st.write(f"#### 工站 {station} 的相关性热力图")
+        
+        # 计算相关性矩阵（移除肩部旋转角度）
+        corr = group_data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']].corr()
 
         # 创建绘图
         fig, ax = plt.subplots(figsize=(8, 6))
         sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f', cbar=True, ax=ax)
 
         # 设置标题和坐标轴字体
-        ax.set_title('肩颈角度相关性热力图', fontproperties=simhei_font)
+        ax.set_title(f'工站 {station} 的肩颈角度相关性热力图', fontproperties=simhei_font)
         ax.set_xticklabels(ax.get_xticklabels(), fontproperties=simhei_font, fontsize=8)
         ax.set_yticklabels(ax.get_yticklabels(), fontproperties=simhei_font, fontsize=8)
 
         # 渲染图表到 Streamlit
         st.pyplot(fig)
-
-        # 相关性热力图分析结论
-        st.write("\n**动态分析结论：相关性热力图**")
         
-         # 分析颈部角度和肩部前屈角度
-        if corr['颈部角度(°)']['肩部前屈角度(°)'] > 0.5:
+        # 分析动态结论
+        st.write(f"**工站 {station} 的动态分析结论：**")
+        
+        # 分析颈部角度和肩部前屈角度
+        if corr.loc['颈部角度(°)', '肩部前屈角度(°)'] > 0.5:
             st.write("- 颈部角度与肩部前屈角度高度正相关，动作之间可能存在协同性。")
-        elif 0 < corr['颈部角度(°)']['肩部前屈角度(°)'] <= 0.5:
+        elif 0 < corr.loc['颈部角度(°)', '肩部前屈角度(°)'] <= 0.5:
             st.write("- 颈部角度与肩部前屈角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
 
         # 分析颈部角度和肩部外展角度
-        if corr['颈部角度(°)']['肩部外展角度(°)'] > 0.5:
+        if corr.loc['颈部角度(°)', '肩部外展角度(°)'] > 0.5:
             st.write("- 颈部角度与肩部外展角度高度正相关，表明两者可能存在较强的协同动作趋势。")
-        elif 0 < corr['颈部角度(°)']['肩部外展角度(°)'] <= 0.5:
+        elif 0 < corr.loc['颈部角度(°)', '肩部外展角度(°)'] <= 0.5:
             st.write("- 颈部角度与肩部外展角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
-        elif corr['颈部角度(°)']['肩部外展角度(°)'] < 0:
+        elif corr.loc['颈部角度(°)', '肩部外展角度(°)'] < 0:
             st.write("- 颈部角度与肩部外展角度呈负相关，可能表现为动作补偿或反向趋势。")
-
-        # 分析颈部角度和肩部旋转角度
-        if corr['颈部角度(°)']['肩部旋转角度(°)'] > 0.5:
-            st.write("- 颈部角度与肩部旋转角度高度正相关，表明两者可能同时参与复杂的联合动作。")
-        elif 0 < corr['颈部角度(°)']['肩部旋转角度(°)'] <= 0.5:
-            st.write("- 颈部角度与肩部旋转角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
-        elif corr['颈部角度(°)']['肩部旋转角度(°)'] < 0:
-            st.write("- 颈部角度与肩部旋转角度呈负相关，可能与补偿动作或对立机制有关。")
-
-        # 分析肩部旋转角度和肩部外展角度
-        if corr['肩部旋转角度(°)']['肩部外展角度(°)'] < 0:
-            st.write("- 肩部旋转与外展角度存在负相关，可能是补偿动作的表现。")
-        elif 0 <= corr['肩部旋转角度(°)']['肩部外展角度(°)'] <= 0.5:
-            st.write("- 肩部旋转与外展角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
-        elif corr['肩部旋转角度(°)']['肩部外展角度(°)'] > 0.5:
-            st.write("- 肩部旋转与外展角度高度正相关，表明动作之间可能存在强协同趋势。")
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):

@@ -112,16 +112,14 @@ if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
     data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
                     '肩部外展角度(°)', '肩部旋转角度(°)']
-    st.write("### 1.1  数据预览")
-    
-    # 调整序号显示，从 1 开始
-    data_reset = data.copy()  # 复制原始数据
-    data_reset.index += 1  # 将索引从 1 开始
-    data_reset.index.name = "序号"  # 为索引命名为 "序号"
 
-    # 在 Streamlit 显示数据预览
+    # 显示数据预览
+    st.write("### 1.1  数据预览")
+    data_reset = data.copy()
+    data_reset.index += 1
+    data_reset.index.name = "序号"
     st.write(data_reset.head())
-       
+
     # 数据统计分析函数
     def analyze_data(data):
         st.write("### 1.2  数据统计分析")
@@ -132,6 +130,30 @@ if uploaded_file is not None:
         st.write(f"- 颈部角度范围：{stats['颈部角度(°)']['min']}° 至 {stats['颈部角度(°)']['max']}°，平均值为 {stats['颈部角度(°)']['mean']:.2f}°")
         st.write(f"- 肩部旋转角度范围：{stats['肩部旋转角度(°)']['min']}° 至 {stats['肩部旋转角度(°)']['max']}°，平均值为 {stats['肩部旋转角度(°)']['mean']:.2f}°")
         st.write(f"- 肩部外展角度的标准差为 {stats['肩部外展角度(°)']['std']:.2f}，波动较 {'大' if stats['肩部外展角度(°)']['std'] > 15 else '小'}。")
+
+    # 按工站汇总计算
+    def summarize_by_station(data):
+        st.write("### 1.4 按工站汇总统计")
+    
+    # 按 '工站(w)' 分组并计算统计特性
+        station_summary = data.groupby('工站(w)').agg({
+            '时间(s)': ['count', 'mean', 'std'],
+            '颈部角度(°)': ['mean', 'min', 'max', 'std'],
+            '肩部前屈角度(°)': ['mean', 'min', 'max', 'std'],
+            '肩部外展角度(°)': ['mean', 'min', 'max', 'std'],
+            '肩部旋转角度(°)': ['mean', 'min', 'max', 'std']
+        })
+
+        # 调整列名格式
+        station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
+        station_summary.reset_index(inplace=True)
+    
+        # 显示汇总统计结果
+        st.write(station_summary)
+
+    # 调用函数
+    analyze_data(data)
+    summarize_by_station(data)
 
     # 3D 散点图
     def generate_3d_scatter(data):

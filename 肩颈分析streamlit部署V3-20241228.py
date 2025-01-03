@@ -137,9 +137,6 @@ if uploaded_file is not None:
         station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
         station_summary.reset_index(inplace=True)
   
-        # 修改转置后的列名（从1开始编号）
-        station_summary.columns = range(1, station_summary_transposed.shape[1] + 1)
-
         # 显示汇总统计结果（转置后）
         st.write(station_summary)
 

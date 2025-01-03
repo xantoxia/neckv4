@@ -136,21 +136,12 @@ if uploaded_file is not None:
         # 调整列名格式
         station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
         station_summary.reset_index(inplace=True)
-    
-        # 转置结果表
-        station_summary_transposed = station_summary.transpose()
-
+  
         # 修改转置后的列名（从1开始编号）
-        station_summary_transposed.columns = range(1, station_summary_transposed.shape[1] + 1)
-
-        # 设置样式
-        styled_summary = station_summary_transposed.style.set_properties(**{
-            'text-align': 'center',  # 文本居中
-            'width': '850px'         # 设置列宽
-        })
+        station_summary.columns = range(1, station_summary_transposed.shape[1] + 1)
 
         # 显示汇总统计结果（转置后）
-        st.write(station_summary_transposed)
+        st.write(station_summary)
 
     # 调用函数
     summarize_by_station(data)

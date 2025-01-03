@@ -87,11 +87,11 @@ plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
 plt.rcParams['axes.unicode_minus'] = False  # 修复负号显示问题
 
 # Streamlit 标题
-st.title("肩颈角度自动分析与异常检测")
+st.title("肩颈角度分析与异常检测")
 st.write("本人因AI工具结合规则与机器学习模型，可以自动检测异常作业姿势并提供可视化分析。")
 
 # 模板下载
-with open("肩颈角度数据模版 - V3.csv", "rb") as file:
+with open("肩颈角度数据模版.csv", "rb") as file:
     st.download_button(
         label="下载 CSV 模板",
         data=file,
@@ -103,15 +103,14 @@ with open("肩颈角度数据模版 - V3.csv", "rb") as file:
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
 if uploaded_file is not None:
-
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
-    # 使用 HTML 格式设置字体颜色为蓝色
+     # 使用 HTML 格式设置字体颜色为蓝色
     st.markdown(f"<h3 style='color:blue;'>{csv_file_name} 肩颈作业姿势分析</h3>", unsafe_allow_html=True)
 
     # 读取数据
     data = pd.read_csv(uploaded_file)
-    data.columns = ['时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
+    data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
                     '肩部外展角度(°)', '肩部旋转角度(°)']
     st.write("### 1.1  数据预览")
     
@@ -188,15 +187,36 @@ if uploaded_file is not None:
 
         # 相关性热力图分析结论
         st.write("\n**动态分析结论：相关性热力图**")
+        
+         # 分析颈部角度和肩部前屈角度
         if corr['颈部角度(°)']['肩部前屈角度(°)'] > 0.5:
             st.write("- 颈部角度与肩部前屈角度高度正相关，动作之间可能存在协同性。")
         elif 0 < corr['颈部角度(°)']['肩部前屈角度(°)'] <= 0.5:
             st.write("- 颈部角度与肩部前屈角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
 
+        # 分析颈部角度和肩部外展角度
+        if corr['颈部角度(°)']['肩部外展角度(°)'] > 0.5:
+            st.write("- 颈部角度与肩部外展角度高度正相关，表明两者可能存在较强的协同动作趋势。")
+        elif 0 < corr['颈部角度(°)']['肩部外展角度(°)'] <= 0.5:
+            st.write("- 颈部角度与肩部外展角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
+        elif corr['颈部角度(°)']['肩部外展角度(°)'] < 0:
+            st.write("- 颈部角度与肩部外展角度呈负相关，可能表现为动作补偿或反向趋势。")
+
+        # 分析颈部角度和肩部旋转角度
+        if corr['颈部角度(°)']['肩部旋转角度(°)'] > 0.5:
+            st.write("- 颈部角度与肩部旋转角度高度正相关，表明两者可能同时参与复杂的联合动作。")
+        elif 0 < corr['颈部角度(°)']['肩部旋转角度(°)'] <= 0.5:
+            st.write("- 颈部角度与肩部旋转角度存在一定程度的正相关，但相关性较弱，协同性可能较低。")
+        elif corr['颈部角度(°)']['肩部旋转角度(°)'] < 0:
+            st.write("- 颈部角度与肩部旋转角度呈负相关，可能与补偿动作或对立机制有关。")
+
+        # 分析肩部旋转角度和肩部外展角度
         if corr['肩部旋转角度(°)']['肩部外展角度(°)'] < 0:
-            st.write("- 肩部旋转与外展/内收角度存在负相关，可能是补偿动作的表现。")
+            st.write("- 肩部旋转与外展角度存在负相关，可能是补偿动作的表现。")
         elif 0 <= corr['肩部旋转角度(°)']['肩部外展角度(°)'] <= 0.5:
-            st.write("- 肩部旋转与外展/内收角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
+            st.write("- 肩部旋转与外展角度存在弱正相关，可能与动作的协调性有关，但关联较弱。")
+        elif corr['肩部旋转角度(°)']['肩部外展角度(°)'] > 0.5:
+            st.write("- 肩部旋转与外展角度高度正相关，表明动作之间可能存在强协同趋势。")
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):
@@ -248,7 +268,7 @@ if uploaded_file is not None:
 
         feature_importances = model.feature_importances_
         st.write("#### 3.2  机器学习特征重要性")
-        for name, importance in zip(data.columns[1:], feature_importances):
+        for name, importance in zip(data.columns[2:], feature_importances):
             st.write(f"- {name}: {importance:.4f}")
 
         abnormal_indices = []
@@ -271,6 +291,9 @@ if uploaded_file is not None:
                 abnormal_indices.append(index)
             elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
+                abnormal_indices.append(index)
+            elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
+                st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                 abnormal_indices.append(index)
             else:
                 st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
@@ -296,6 +319,9 @@ if uploaded_file is not None:
                     elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                         st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
                         abnormal_indices.append(index)
+                    elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
+                        st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
+                        abnormal_indices.append(index)
                     else:
                         st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
@@ -316,6 +342,9 @@ if uploaded_file is not None:
                 abnormal_indices.append(index)
             elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                 st.write(f"- 第 {index+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
+                abnormal_indices.append(index)
+            elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
+                st.write(f"- 第 {index+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                 abnormal_indices.append(index)
             else:
                 st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
@@ -340,10 +369,15 @@ if uploaded_file is not None:
         np.random.seed(42)
         data['Label'] = np.random.choice([0, 1], size=len(data))
     y = data['Label']
-    
+
+    # 数据预处理：重新定义标签
+    data['Label'] = ((data['颈部角度(°)'] > 20) | (data['Label'] == 1)).astype(int)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     model.fit(X_train, y_train)   
-           
+    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
+    y_prob = model.predict_proba(X_test)[:, 1]
+               
     # 调用函数生成图和结论
     analyze_data(data)
     generate_3d_scatter(data)
@@ -358,7 +392,7 @@ if uploaded_file is not None:
                                
     st.write("### 3.4  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    y_pred = model.predict(X_test)
+    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
     y_prob = model.predict_proba(X_test)[:, 1]
     fpr, tpr, thresholds = roc_curve(y_test, y_prob)
     roc_auc = auc(fpr, tpr)

@@ -421,7 +421,6 @@ if uploaded_file is not None:
     y_prob = model.predict_proba(X_test)[:, 1]
                
     # 调用函数生成图和结论
-    generate_3d_scatter(data)
     generate_correlation_heatmap(data)
     generate_scatter_plots(data)
     abnormal_indices = comprehensive_analysis(data, model)

@@ -254,51 +254,58 @@ if uploaded_file is not None:
     # 调用函数生成图和结论
     generate_correlation_heatmap(data)
             
-    # 肩颈角度时间变化散点图
-    def generate_scatter_plots(data):
-        st.write("### 2.3 肩颈角度时间变化散点图")
+    # 肩颈角度时间变化折线图（带水平预警线）
+    def generate_line_plots_with_threshold(data):
+        st.write("### 2.3 肩颈角度时间变化折线图")
     
         # 按 '工站(w)' 分组
         grouped = data.groupby('工站(w)')
     
         # 遍历每个工站的数据
         for station, group_data in grouped:
-            st.write(f"#### 工站 {station} 的肩颈角度时间变化散点图")
+            st.write(f"#### 工站 {station} 的肩颈角度时间变化折线图")
         
             # 绘制图像
             fig, ax = plt.subplots(figsize=(10, 6))
-            ax.scatter(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', alpha=0.7)
-            ax.scatter(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', alpha=0.7)
+        
+            # 绘制折线图
+            ax.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)
+            ax.plot(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', color='green', linewidth=2)
+        
+            # 添加水平预警线
+            ax.axhline(y=20, color='red', linestyle='--', linewidth=1.5, label='颈部角度预警线 (20°)')
+            ax.axhline(y=45, color='orange', linestyle='--', linewidth=1.5, label='肩部前屈角度预警线 (45°)')
+        
+            # 设置坐标轴和标题
             ax.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
             ax.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
-            ax.set_title(f'工站 {station} 的肩颈角度时间变化散点图', fontproperties=simhei_font, fontsize=12)
-
-            # 设置图例字体
-            legend = ax.legend(prop=simhei_font)  # 图例字体设置为 simhei
-
-            # 用 st.pyplot() 嵌入图像
+            ax.set_title(f'工站 {station} 的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
+        
+            # 设置图例
+            ax.legend(prop=simhei_font, fontsize=10)  # 图例字体设置为 simhei
+        
+            # 渲染图像
             st.pyplot(fig)
         
-            # 散点图动态结论
-            st.write(f"\n**动态分析结论：工站 {station}**")
+            # 动态分析结论
+            st.write(f"**工站 {station} 的动态分析结论：**")
         
-            # 对 颈部角度(°) 的分析
-            neck_mean = group_data['颈部角度(°)'].mean()
-            if neck_mean > 20:
-                st.write("- 颈部角度的整体水平较高，可能是头部前倾较多导致的。")
-            elif 10 <= neck_mean <= 20:
-                st.write("- 颈部角度处于中等水平，动作姿势可能较为自然。")
+            # 颈部角度分析
+            neck_exceed_count = (group_data['颈部角度(°)'] > 20).sum()
+            if neck_exceed_count > 0:
+                st.write(f"- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，存在一定 MSD 风险。")
             else:
-                st.write("- 颈部角度较低，头部可能偏后或抬头动作较多。")
+                st.write("- 颈部角度未超过 20°，MSD 风险较低。")
         
-            # 对 肩部前屈角度(°) 的分析
-            shoulder_flexion_std = group_data['肩部前屈角度(°)'].std()
-            if shoulder_flexion_std < 10:
-                st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
-            elif 10 <= shoulder_flexion_std <= 15:
-                st.write("- 肩部前屈角度的波动性适中，可能动作较为稳定。")
+            # 肩部前屈角度分析
+            shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
+            if shoulder_exceed_count > 0:
+                st.write(f"- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，请注意作业时是否有手部支撑。")
             else:
-                st.write("- 肩部前屈角度的波动性较大，动作可能不稳定。")
+                st.write("- 肩部前屈角度未超过 45°，动作幅度较为自然。")
+                
+    # 调用函数生成图和结论
+    generate_line_plots_with_threshold(data)
     
     # 综合分析
     def comprehensive_analysis(data, model):
@@ -422,7 +429,6 @@ if uploaded_file is not None:
     y_prob = model.predict_proba(X_test)[:, 1]
                
     # 调用函数生成图和结论
-    generate_scatter_plots(data)
     abnormal_indices = comprehensive_analysis(data, model)
     
     if abnormal_indices:

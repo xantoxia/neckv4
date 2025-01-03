@@ -126,7 +126,7 @@ if uploaded_file is not None:
     
     # 按 '工站(w)' 分组并计算统计特性
         station_summary = data.groupby('工站(w)').agg({
-            '时间(s)': ['count', 'mean', 'std'],
+            '时间(s)': ['count'],
             '颈部角度(°)': ['mean', 'min', 'max', 'std'],
             '肩部前屈角度(°)': ['mean', 'min', 'max', 'std'],
             '肩部外展角度(°)': ['mean', 'min', 'max', 'std'],

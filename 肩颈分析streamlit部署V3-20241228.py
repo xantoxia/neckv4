@@ -251,8 +251,8 @@ if uploaded_file is not None:
             elif corr.loc['颈部角度(°)', '肩部外展角度(°)'] < 0:
                 st.write("- 颈部角度与肩部外展角度呈负相关，可能表现为动作补偿或反向趋势。")
 
-        # 调用函数生成图和结论
-        generate_correlation_heatmap(data)
+    # 调用函数生成图和结论
+    generate_correlation_heatmap(data)
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):

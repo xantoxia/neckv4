@@ -256,43 +256,50 @@ if uploaded_file is not None:
             
     # 肩颈角度时间变化散点图
     def generate_scatter_plots(data):
-        st.write("### 2.3  肩颈角度时间变化散点图")
+        st.write("### 2.3 肩颈角度时间变化散点图")
+    
+        # 按 '工站(w)' 分组
+        grouped = data.groupby('工站(w)')
+    
+        # 遍历每个工站的数据
+        for station, group_data in grouped:
+            st.write(f"#### 工站 {station} 的肩颈角度时间变化散点图")
         
-        # 绘制图像
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.scatter(data['时间(s)'], data['颈部角度(°)'], label='颈部角度(°)', alpha=0.7)
-        ax.scatter(data['时间(s)'], data['肩部前屈角度(°)'], label='肩部前屈角度(°)', alpha=0.7)
-        ax.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
-        ax.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
-        ax.set_title('肩颈角度时间变化散点图', fontproperties=simhei_font, fontsize=12)
+            # 绘制图像
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.scatter(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', alpha=0.7)
+            ax.scatter(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', alpha=0.7)
+            ax.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
+            ax.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
+            ax.set_title(f'工站 {station} 的肩颈角度时间变化散点图', fontproperties=simhei_font, fontsize=12)
 
-        # 设置图例字体
-        legend = ax.legend(prop=simhei_font)  # 图例字体设置为 simhei
+            # 设置图例字体
+            legend = ax.legend(prop=simhei_font)  # 图例字体设置为 simhei
+
+            # 用 st.pyplot() 嵌入图像
+            st.pyplot(fig)
         
-        # 用 st.pyplot() 嵌入图像
-        st.pyplot(fig)
+            # 散点图动态结论
+            st.write(f"\n**动态分析结论：工站 {station}**")
         
-        # 散点图动态结论
-        st.write("\n**动态分析结论：散点图**")
-
-        # 对 颈部角度(°) 的分析
-        neck_mean = data['颈部角度(°)'].mean()
-        if neck_mean > 20:
-            st.write("- 颈部角度的整体水平较高，可能是头部前倾较多导致的。")
-        elif 10 <= neck_mean <= 20:
-            st.write("- 颈部角度处于中等水平，动作姿势可能较为自然。")
-        else:
-            st.write("- 颈部角度较低，头部可能偏后或抬头动作较多。")
-
-        # 对 肩部旋转角度(°) 的分析（统一标准差逻辑）
-        shoulder_rotation_std = data['肩部旋转角度(°)'].std()
-        if shoulder_rotation_std < 10:
-            st.write("- 肩部旋转角度的波动较小，动作幅度相对一致。")
-        elif 10 <= shoulder_rotation_std <= 15:
-            st.write("- 肩部旋转角度的波动性适中，可能动作较为稳定。")
-        else:
-            st.write("- 肩部旋转角度的波动性较大，动作可能不稳定。")         
-
+            # 对 颈部角度(°) 的分析
+            neck_mean = group_data['颈部角度(°)'].mean()
+            if neck_mean > 20:
+                st.write("- 颈部角度的整体水平较高，可能是头部前倾较多导致的。")
+            elif 10 <= neck_mean <= 20:
+                st.write("- 颈部角度处于中等水平，动作姿势可能较为自然。")
+            else:
+                st.write("- 颈部角度较低，头部可能偏后或抬头动作较多。")
+        
+            # 对 肩部前屈角度(°) 的分析
+            shoulder_flexion_std = group_data['肩部前屈角度(°)'].std()
+            if shoulder_flexion_std < 10:
+                st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
+            elif 10 <= shoulder_flexion_std <= 15:
+                st.write("- 肩部前屈角度的波动性适中，可能动作较为稳定。")
+            else:
+                st.write("- 肩部前屈角度的波动性较大，动作可能不稳定。")
+    
     # 综合分析
     def comprehensive_analysis(data, model):
         neck_threshold = data['颈部角度(°)'].mean() + data['颈部角度(°)'].std()

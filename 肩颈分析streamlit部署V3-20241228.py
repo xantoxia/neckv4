@@ -146,7 +146,7 @@ if uploaded_file is not None:
         # 设置样式
         styled_summary = station_summary_transposed.style.set_properties(**{
             'text-align': 'center',  # 文本居中
-            'width': '150px'         # 设置列宽
+            'width': '350px'         # 设置列宽
         })
 
         # 显示汇总统计结果（转置后）

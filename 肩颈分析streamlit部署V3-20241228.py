@@ -120,20 +120,9 @@ if uploaded_file is not None:
     data_reset.index.name = "序号"
     st.write(data_reset.head())
 
-    # 数据统计分析函数
-    def analyze_data(data):
-        st.write("### 1.2  数据统计分析")
-        stats = data.describe()
-        st.write(stats)
-
-        st.write("### 1.3  动态分析结论：数据统计特性")
-        st.write(f"- 颈部角度范围：{stats['颈部角度(°)']['min']}° 至 {stats['颈部角度(°)']['max']}°，平均值为 {stats['颈部角度(°)']['mean']:.2f}°")
-        st.write(f"- 肩部旋转角度范围：{stats['肩部旋转角度(°)']['min']}° 至 {stats['肩部旋转角度(°)']['max']}°，平均值为 {stats['肩部旋转角度(°)']['mean']:.2f}°")
-        st.write(f"- 肩部外展角度的标准差为 {stats['肩部外展角度(°)']['std']:.2f}，波动较 {'大' if stats['肩部外展角度(°)']['std'] > 15 else '小'}。")
-
     # 按工站汇总计算
     def summarize_by_station(data):
-        st.write("### 1.4 按工站汇总统计")
+        st.write("### 1.2  数据统计分析")
     
     # 按 '工站(w)' 分组并计算统计特性
         station_summary = data.groupby('工站(w)').agg({
@@ -152,7 +141,6 @@ if uploaded_file is not None:
         st.write(station_summary)
 
     # 调用函数
-    analyze_data(data)
     summarize_by_station(data)
 
     # 3D 散点图
@@ -401,7 +389,6 @@ if uploaded_file is not None:
     y_prob = model.predict_proba(X_test)[:, 1]
                
     # 调用函数生成图和结论
-    analyze_data(data)
     generate_3d_scatter(data)
     generate_correlation_heatmap(data)
     generate_scatter_plots(data)

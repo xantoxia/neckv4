@@ -136,8 +136,11 @@ if uploaded_file is not None:
         # 调整列名格式
         station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
         station_summary.reset_index(inplace=True)
+
+        # 限制小数点位数为最多2位
+        station_summary = station_summary.round(2)
   
-        # 显示汇总统计结果（转置后）
+        # 显示汇总统计结果
         st.write(station_summary)
 
     # 调用函数

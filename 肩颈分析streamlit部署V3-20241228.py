@@ -129,8 +129,7 @@ if uploaded_file is not None:
             '时间(s)': ['count'],
             '颈部角度(°)': ['mean', 'min', 'max', 'std'],
             '肩部前屈角度(°)': ['mean', 'min', 'max', 'std'],
-            '肩部外展角度(°)': ['mean', 'min', 'max', 'std'],
-            '肩部旋转角度(°)': ['mean', 'min', 'max', 'std']
+            '肩部外展角度(°)': ['mean', 'min', 'max', 'std']
         })
 
         # 调整列名格式
@@ -189,11 +188,11 @@ if uploaded_file is not None:
             st.write(f"**工站 {station} 的动态分析结论：**")
             neck_Flexion_max = group_data['颈部角度(°)'].max()
             if neck_Flexion_max < 20:
-                st.write("- 颈部角度处于20°之内，MSD风险较低。")
+                st.write("- 作业时颈部角度处于20°之内，MSD风险较低。")
             elif 20 <= neck_Flexion_max <= 40:
-                st.write("- 部分时间点颈部角度超过 20°，存在一定MSD风险。")
+                st.write("- 部分时间点颈部角度超过20°，存在一定的MSD风险。")
             else:
-                st.write("- 部分时间点颈部角度超过 40°，请注意可能存在极端动作。")
+                st.write("- 部分时间点颈部角度超过40°，请注意可能存在极端低头动作。")
         
             shoulder_Flexion_max = group_data['肩部前屈角度(°)'].max()
             if shoulder_Flexion_max < 15:
@@ -202,11 +201,10 @@ if uploaded_file is not None:
                 st.write("- 部分时间点肩部前屈角度大于45°，请注意作业时是否有手部支撑。")
 
             if group_data['肩部外展角度(°)'].mean() > 20:
-                st.write("- 肩部外展角度的整体幅度较大，运动强度可能较高。")
+                st.write("- 肩部外展角度的整体幅度较大，上臂作业时运动强度可能较高。")
 
     # 调用函数
     generate_3d_scatter(data)
-
 
     # 相关性热力图
     def generate_correlation_heatmap(data):

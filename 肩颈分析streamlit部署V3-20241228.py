@@ -479,22 +479,9 @@ if uploaded_file is not None:
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
     
-    # 保存新模型到临时文件夹
-    local_model_path = f"/tmp/{model_filename}"
-    dump(model, local_model_path)
-    st.write("模型已训练并保存到本地临时路径。")
-
     # 上传新模型到 GitHub
     save_and_upload_new_model(local_model_path, models_folder + model_filename, commit_message)
     st.write("模型已保存并上传到 GitHub。")
-    
-    # 更新最新模型信息
-    latest_info_path = "/tmp/" + latest_model_file
-    with open(latest_info_path, "w") as f:
-        f.write(model_filename)
-    save_and_upload_new_model(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-    st.success("新模型已上传，并更新最新模型记录。")
-
-    
+        
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

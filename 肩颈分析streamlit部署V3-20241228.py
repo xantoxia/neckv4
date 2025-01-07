@@ -337,67 +337,67 @@ if uploaded_file is not None:
 
         return abnormal_indices
 
-# 动态读取Token
-token = os.getenv("GITHUB_TOKEN")
-if not token:
-    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
-    st.stop()
+    # 动态读取Token
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
+        st.stop()
 
-# GitHub 配置
-repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
-models_folder = "models/"  # GitHub 仓库中模型文件存储路径
-latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
-commit_message = "从Streamlit更新模型文件"  # 提交信息
+    # GitHub 配置
+    repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
+    models_folder = "models/"  # GitHub 仓库中模型文件存储路径
+    latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
+    commit_message = "从Streamlit更新模型文件"  # 提交信息
 
-# 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d_%H%M%S")
-model_filename = f"肩颈分析-模型-{timestamp}.joblib"
+    # 定义带时间戳的备份文件名
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    model_filename = f"肩颈分析-模型-{timestamp}.joblib"
 
-# 上传文件到 GitHub
-def upload_file_to_github(file_path, github_path, commit_message):
-    try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
-
-        # 读取文件内容
-        with open(file_path, "rb") as f:
-            content = f.read()
-
-        # 检查文件是否存在
+    # 上传文件到 GitHub
+    def upload_file_to_github(file_path, github_path, commit_message):
         try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-        except:
-            repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
-    except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
+            g = Github(token)
+            repo = g.get_repo(repo_name)
 
-# 下载最新模型文件
-def download_latest_model_from_github():
-    try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
+    # 读取文件内容
+            with open(file_path, "rb") as f:
+                content = f.read()
+
+            # 检查文件是否存在
+            try:
+                file = repo.get_contents(github_path)
+                repo.update_file(github_path, commit_message, content, file.sha)
+                st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
+            except:
+                repo.create_file(github_path, commit_message, content)
+                st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
+        except Exception as e:
+            st.error(f"上传文件到 GitHub 失败：{e}")
+
+    # 下载最新模型文件
+    def download_latest_model_from_github():
+        try:
+            g = Github(token)
+            repo = g.get_repo(repo_name)
 
         # 获取最新模型信息
-        try:
-            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-            latest_model_path = models_folder + latest_info.strip()
-            st.write(f"最新模型路径：{latest_model_path}")
+            try:
+                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+                latest_model_path = models_folder + latest_info.strip()
+                st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件
-            file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
-                f.write(file_content.decoded_content)
-            st.success("成功下载最新模型！")
-            return "/tmp/latest_model.joblib"
-        except:
-            st.warning("未找到最新模型信息文件，无法下载模型。")
+                file_content = repo.get_contents(latest_model_path)
+                with open("/tmp/latest_model.joblib", "wb") as f:
+                    f.write(file_content.decoded_content)
+                st.success("成功下载最新模型！")
+                return "/tmp/latest_model.joblib"
+            except:
+                st.warning("未找到最新模型信息文件，无法下载模型。")
+                return None
+        except Exception as e:
+            st.error(f"从 GitHub 下载模型失败：{e}")
             return None
-    except Exception as e:
-        st.error(f"从 GitHub 下载模型失败：{e}")
-        return None
     
     # 机器学习
     if uploaded_file is not None:

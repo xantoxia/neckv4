@@ -259,26 +259,29 @@ if uploaded_file is not None:
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     model_filename = f"肩颈分析-模型-{timestamp}.joblib"
 
-    # 上传文件到 GitHub
-    def upload_file_to_github(file_path, github_path, commit_message):
-        try:
-            g = Github(token)
-            repo = g.get_repo(repo_name)
+    # 保存和上传新模型
+    def save_and_upload_new_model(model, model_filename, commit_message):
+        # 保存新模型到临时文件夹
+        local_model_path = f"/tmp/{model_filename}"
+        dump(model, local_model_path)
+        st.write("模型已训练并保存到本地临时路径。")
 
-    # 读取文件内容
-            with open(file_path, "rb") as f:
-                content = f.read()
+        # 下载最新模型以确保流程的完整性
+        latest_model_path = download_latest_model_from_github()
 
-            # 检查文件是否存在
-            try:
-                file = repo.get_contents(github_path)
-                repo.update_file(github_path, commit_message, content, file.sha)
-                st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-            except:
-                repo.create_file(github_path, commit_message, content)
-                st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
-        except Exception as e:
-            st.error(f"上传文件到 GitHub 失败：{e}")
+        if latest_model_path:
+            # 上传新模型到 GitHub
+            upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+            st.write("模型已保存并上传到 GitHub。")
+
+            # 更新最新模型信息
+            latest_info_path = "/tmp/" + latest_model_file
+            with open(latest_info_path, "w") as f:
+                f.write(model_filename)
+            upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+            st.success("新模型已上传，并更新最新模型记录。")
+        else:
+            st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
 
     # 下载最新模型文件
     def download_latest_model_from_github():
@@ -410,7 +413,7 @@ if uploaded_file is not None:
     else:
         model = RandomForestClassifier(random_state=42)
         st.write("未加载到模型，训练新模型...")
-
+    
     # 模型训练或重新训练
     X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']]
     if 'Label' not in data.columns:
@@ -482,17 +485,16 @@ if uploaded_file is not None:
     st.write("模型已训练并保存到本地临时路径。")
 
     # 上传新模型到 GitHub
-    upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+    save_and_upload_new_model(local_model_path, models_folder + model_filename, commit_message)
     st.write("模型已保存并上传到 GitHub。")
     
     # 更新最新模型信息
     latest_info_path = "/tmp/" + latest_model_file
     with open(latest_info_path, "w") as f:
         f.write(model_filename)
-    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+    save_and_upload_new_model(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
-    else:
-        st.error("无法加载最新模型，停止上传新模型流程。")
+
     
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

@@ -266,6 +266,9 @@ if uploaded_file is not None:
         dump(model, local_model_path)
         st.write("模型已保存到本地临时路径。")
 
+        # 下载最新模型以确保流程的完整性
+        latest_model_path = download_latest_model_from_github()
+
         if latest_model_path:
             # 上传新模型到 GitHub
             upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)

@@ -256,33 +256,8 @@ if uploaded_file is not None:
     commit_message = "从Streamlit更新模型文件"  # 提交信息
 
     # 定义带时间戳的备份文件名
-    timestamp = time.strftime("%Y%m%d+%H%M%S")
-    model_filename = f"肩颈模型{timestamp}.joblib"
-    
-    # 下载最新模型文件
-    def download_latest_model_from_github():
-        try:
-            g = Github(token)
-            repo = g.get_repo(repo_name)
-
-        # 获取最新模型信息
-            try:
-                latest_info = repo.get_contents(latest_info_path).decoded_content.decode().strip()
-                latest_model_path = os.path.join(models_folder, latest_info)
-                st.write(f"最新模型路径：{latest_model_path}")
-
-            # 下载最新模型文件
-                local_tmp_path = os.path.join(os.getcwd(), "latest_model.joblib")  # 当前工作目录
-                with open(local_tmp_path, "wb") as f:
-                    f.write(file_content.decoded_content)
-                st.success(f"成功下载最新模型到：{local_tmp_path}")
-                return "/tmp/latest_model.joblib"
-            except:
-                st.warning("未找到最新模型信息文件，无法下载模型。")
-                return None
-        except Exception as e:
-            st.error(f"从 GitHub 下载模型失败：{e}")
-            return None
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    model_filename = f"肩颈分析-模型-{timestamp}.joblib"
 
     # 保存和上传新模型
     def save_and_upload_new_model(model, model_filename, commit_message):
@@ -296,19 +271,42 @@ if uploaded_file is not None:
 
         if latest_model_path:
             # 上传新模型到 GitHub
-            upload_file_to_github(local_model_path, os.path.join(models_folder, model_filename), commit_message)
+            upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
             st.write("模型已保存并上传到 GitHub。")
 
             # 更新最新模型信息
             latest_info_path = "/tmp/" + latest_model_file
             with open(latest_info_path, "w") as f:
                 f.write(model_filename)
-            upload_file_to_github(latest_info_path, os.path.join(models_folder, latest_model_file), "更新最新模型信息")
+            upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
             st.success("新模型已上传，并更新最新模型记录。")
         else:
             st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
 
+    # 下载最新模型文件
+    def download_latest_model_from_github():
+        try:
+            g = Github(token)
+            repo = g.get_repo(repo_name)
 
+        # 获取最新模型信息
+            try:
+                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+                latest_model_path = models_folder + latest_info.strip()
+                st.write(f"最新模型路径：{latest_model_path}")
+
+            # 下载最新模型文件
+                file_content = repo.get_contents(latest_model_path)
+                with open("/tmp/latest_model.joblib", "wb") as f:
+                    f.write(file_content.decoded_content)
+                st.success("成功下载最新模型！")
+                return "/tmp/latest_model.joblib"
+            except:
+                st.warning("未找到最新模型信息文件，无法下载模型。")
+                return None
+        except Exception as e:
+            st.error(f"从 GitHub 下载模型失败：{e}")
+            return None
  
      # 综合分析
     def comprehensive_analysis(data, model):
@@ -416,10 +414,6 @@ if uploaded_file is not None:
         model = RandomForestClassifier(random_state=42)
         st.write("未加载到模型，训练新模型...")
     
-    # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
-    st.write("模型已保存并上传到 GitHub。")
-    
     # 模型训练或重新训练
     X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']]
     if 'Label' not in data.columns:
@@ -484,6 +478,10 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
+    
+    # 上传新模型到 GitHub
+    save_and_upload_new_model(model, model_filename, commit_message)
+    st.write("模型已保存并上传到 GitHub。")
         
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

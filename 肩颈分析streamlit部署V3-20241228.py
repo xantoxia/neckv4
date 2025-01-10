@@ -256,8 +256,8 @@ if uploaded_file is not None:
     commit_message = "从Streamlit更新模型文件"  # 提交信息
 
     # 定义带时间戳的备份文件名
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    model_filename = f"肩颈分析-模型-{timestamp}.joblib"
+    timestamp = time.strftime("%Y%m%d%H%M%S")
+    model_filename = f"肩颈分析模型{timestamp}.joblib"
 
     # 保存和上传新模型
     def save_and_upload_new_model(model, model_filename, commit_message):

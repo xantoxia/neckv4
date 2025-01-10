@@ -49,7 +49,7 @@ if uploaded_file is not None:
     # 读取数据
     data = pd.read_csv(uploaded_file)
     data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
-                    '肩部外展角度(°)']
+                    '肩部外展角度(°)', '肩部旋转角度(°)']
 
     # 显示数据预览
     st.write("### 1.1  数据预览")

@@ -272,10 +272,10 @@ if uploaded_file is not None:
                 st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件
-                file_content = repo.get_contents(latest_model_path)
-                with open("/tmp/latest_model.joblib", "wb") as f:
+                local_tmp_path = os.path.join(os.getcwd(), "latest_model.joblib")  # 当前工作目录
+                with open(local_tmp_path, "wb") as f:
                     f.write(file_content.decoded_content)
-                st.success("成功下载最新模型！")
+                st.success(f"成功下载最新模型到：{local_tmp_path}")
                 return "/tmp/latest_model.joblib"
             except:
                 st.warning("未找到最新模型信息文件，无法下载模型。")

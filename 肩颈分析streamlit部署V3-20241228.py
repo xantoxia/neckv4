@@ -300,7 +300,7 @@ if uploaded_file is not None:
                 with open("/tmp/latest_model.joblib", "wb") as f:
                     f.write(file_content.decoded_content)
                 st.success("成功下载最新模型！")
-                return "/tmp/latest_model.joblib"
+                return model_file_path
             except:
                 st.warning("未找到最新模型信息文件，无法下载模型。")
                 return None

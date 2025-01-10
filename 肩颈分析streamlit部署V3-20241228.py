@@ -267,8 +267,8 @@ if uploaded_file is not None:
 
         # 获取最新模型信息
             try:
-                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-                latest_model_path = models_folder + latest_info.strip()
+                latest_info = repo.get_contents(os.path.join(models_folder, latest_model_file)).decoded_content.decode()
+                latest_model_path = os.path.join(models_folder, latest_info.strip())
                 st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件
@@ -296,14 +296,14 @@ if uploaded_file is not None:
 
         if latest_model_path:
             # 上传新模型到 GitHub
-            upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+            upload_file_to_github(local_model_path, os.path.join(models_folder, model_filename), commit_message)
             st.write("模型已保存并上传到 GitHub。")
 
             # 更新最新模型信息
             latest_info_path = "/tmp/" + latest_model_file
             with open(latest_info_path, "w") as f:
                 f.write(model_filename)
-            upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+            upload_file_to_github(latest_info_path, os.path.join(models_folder, latest_model_file), "更新最新模型信息")
             st.success("新模型已上传，并更新最新模型记录。")
         else:
             st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")

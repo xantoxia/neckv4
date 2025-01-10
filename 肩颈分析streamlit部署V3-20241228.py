@@ -256,8 +256,8 @@ if uploaded_file is not None:
     commit_message = "从Streamlit更新模型文件"  # 提交信息
 
     # 定义带时间戳的备份文件名
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    model_filename = f"jjmodels{timestamp}.joblib"
+    timestamp = time.strftime("%Y%m%d+%H%M%S")
+    model_filename = f"肩颈模型{timestamp}.joblib"
     
     # 下载最新模型文件
     def download_latest_model_from_github():
@@ -416,6 +416,10 @@ if uploaded_file is not None:
         model = RandomForestClassifier(random_state=42)
         st.write("未加载到模型，训练新模型...")
     
+    # 上传新模型到 GitHub
+    save_and_upload_new_model(model, model_filename, commit_message)
+    st.write("模型已保存并上传到 GitHub。")
+    
     # 模型训练或重新训练
     X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)', '肩部旋转角度(°)']]
     if 'Label' not in data.columns:
@@ -480,10 +484,6 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
-    
-    # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
-    st.write("模型已保存并上传到 GitHub。")
         
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

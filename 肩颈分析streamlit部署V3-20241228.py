@@ -267,8 +267,8 @@ if uploaded_file is not None:
 
         # 获取最新模型信息
             try:
-                latest_info = repo.get_contents(os.path.join(models_folder, latest_model_file)).decoded_content.decode()
-                latest_model_path = os.path.join(models_folder, latest_info.strip())
+                latest_info = repo.get_contents(latest_info_path).decoded_content.decode().strip()
+                latest_model_path = os.path.join(models_folder, latest_info)
                 st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件

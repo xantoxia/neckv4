@@ -49,7 +49,7 @@ if uploaded_file is not None:
     # 读取数据
     data = pd.read_csv(uploaded_file)
     data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', '肩部前屈角度(°)', 
-                    '肩部外展角度(°)', '肩部旋转角度(°)']
+                    '肩部外展角度(°)']
 
     # 显示数据预览
     st.write("### 1.1  数据预览")
@@ -264,7 +264,7 @@ if uploaded_file is not None:
         # 保存新模型到临时文件夹
         local_model_path = f"/tmp/{model_filename}"
         dump(model, local_model_path)
-        st.write("模型已训练并保存到本地临时路径。")
+        st.write("模型已保存到本地临时路径。")
 
         # 下载最新模型以确保流程的完整性
         latest_model_path = download_latest_model_from_github()
@@ -402,7 +402,8 @@ if uploaded_file is not None:
 
         return abnormal_indices
 
-    download_latest_model_from_github()
+    # 上传新模型到 GitHub
+    save_and_upload_new_model(model, model_filename, commit_message)
     
     # 机器学习
     if uploaded_file is not None:
@@ -438,7 +439,8 @@ if uploaded_file is not None:
         st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
     else:
         st.write("AI模型未检测到异常数据。")
-                               
+
+    
     st.write("### 3.4  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
@@ -481,8 +483,6 @@ if uploaded_file is not None:
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
     
-    # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
         
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

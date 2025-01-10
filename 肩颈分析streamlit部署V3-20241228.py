@@ -401,10 +401,7 @@ if uploaded_file is not None:
                 st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
 
         return abnormal_indices
-
-    # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
-    
+   
     # 机器学习
     if uploaded_file is not None:
         # 下载最新模型
@@ -482,6 +479,9 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
+
+    # 上传新模型到 GitHub
+    save_and_upload_new_model(model, model_filename, commit_message)
     
         
     st.write("#### 页面导出")

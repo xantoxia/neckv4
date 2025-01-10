@@ -362,7 +362,7 @@ if uploaded_file is not None:
                         rule_based_conclusion = "肩部前屈角度异常"
 
                     ml_conclusion = "异常" if model.predict([[row['颈部角度(°)'], row['肩部前屈角度(°)'], 
-                                                              row['肩部外展角度(°)'], row['肩部前屈角度(°)']]])[0] == 1 else "正常"
+                                                              row['肩部外展角度(°)']]])[0] == 1 else "正常"
 
                     if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                         st.write(f"- 第 {index+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")

@@ -258,6 +258,31 @@ if uploaded_file is not None:
     # 定义带时间戳的备份文件名
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     model_filename = f"jjmodels{timestamp}.joblib"
+    
+    # 下载最新模型文件
+    def download_latest_model_from_github():
+        try:
+            g = Github(token)
+            repo = g.get_repo(repo_name)
+
+        # 获取最新模型信息
+            try:
+                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+                latest_model_path = models_folder + latest_info.strip()
+                st.write(f"最新模型路径：{latest_model_path}")
+
+            # 下载最新模型文件
+                file_content = repo.get_contents(latest_model_path)
+                with open("/tmp/latest_model.joblib", "wb") as f:
+                    f.write(file_content.decoded_content)
+                st.success("成功下载最新模型！")
+                return "/tmp/latest_model.joblib"
+            except:
+                st.warning("未找到最新模型信息文件，无法下载模型。")
+                return None
+        except Exception as e:
+            st.error(f"从 GitHub 下载模型失败：{e}")
+            return None
 
     # 保存和上传新模型
     def save_and_upload_new_model(model, model_filename, commit_message):
@@ -283,30 +308,7 @@ if uploaded_file is not None:
         else:
             st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
 
-    # 下载最新模型文件
-    def download_latest_model_from_github():
-        try:
-            g = Github(token)
-            repo = g.get_repo(repo_name)
 
-        # 获取最新模型信息
-            try:
-                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-                latest_model_path = models_folder + latest_info.strip()
-                st.write(f"最新模型路径：{latest_model_path}")
-
-            # 下载最新模型文件
-                file_content = repo.get_contents(latest_model_path)
-                with open("/tmp/latest_model.joblib", "wb") as f:
-                    f.write(file_content.decoded_content)
-                st.success("成功下载最新模型！")
-                return "/tmp/latest_model.joblib"
-            except:
-                st.warning("未找到最新模型信息文件，无法下载模型。")
-                return None
-        except Exception as e:
-            st.error(f"从 GitHub 下载模型失败：{e}")
-            return None
  
      # 综合分析
     def comprehensive_analysis(data, model):

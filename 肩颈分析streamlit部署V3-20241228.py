@@ -257,7 +257,7 @@ if uploaded_file is not None:
 
     # 定义带时间戳的备份文件名
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    model_filename = f"肩颈分析-模型-{timestamp}.joblib"
+    model_filename = f"jjmodels{timestamp}.joblib"
 
     # 保存和上传新模型
     def save_and_upload_new_model(model, model_filename, commit_message):

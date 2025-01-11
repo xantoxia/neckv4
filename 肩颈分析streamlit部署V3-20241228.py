@@ -442,10 +442,10 @@ if uploaded_file is not None:
     # 调用函数生成图和结论
     abnormal_indices = comprehensive_analysis_by_workstation(data, model)
     
-        if abnormal_indices:
-            st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
-        else:
-            st.write("AI模型未检测到异常数据。")
+    if abnormal_indices:
+        st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
+    else:
+        st.write("AI模型未检测到异常数据。")
 
     
         st.write("### 3.4  AI模型质量评估")

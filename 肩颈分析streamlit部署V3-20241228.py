@@ -478,6 +478,11 @@ if uploaded_file is not None:
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
+    # 保存新模型到临时文件夹
+    local_model_path = f"/tmp/{model_filename}"
+    dump(model, local_model_path)
+    st.write("模型已训练并保存到本地临时路径。") 
+    
     # 上传新模型到 GitHub
     upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
     st.write("模型已保存并上传到 GitHub。")

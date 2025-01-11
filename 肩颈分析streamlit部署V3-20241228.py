@@ -38,8 +38,8 @@ model_filename = f"jjmodel{timestamp}.joblib"
 # 保存和上传新模型
 def save_and_upload_new_model(model, model_filename, commit_message):
     try:
-    g = Github(token)
-    repo = g.get_repo(repo_name)
+        g = Github(token)
+        repo = g.get_repo(repo_name)
     
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"

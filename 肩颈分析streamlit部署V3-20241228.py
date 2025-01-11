@@ -334,11 +334,11 @@ if uploaded_file is not None:
 
             # AI模型检测结果
             abnormal_indices = []
-            st.write("##### 作业姿势AI模型检测结果")
+            st.write("##### AI模型逐条数据检测结果")
         
             # 前10条
-            st.write("###### 前10条检测结果：")
-            for index, row in group_data.iloc[:10].iterrows():
+            st.write(f"###### 工站 {station} 的前5条数据检测结果：")
+            for index, row in group_data.iloc[:5].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
                     rule_based_conclusion = "颈部角度异常"
@@ -361,10 +361,10 @@ if uploaded_file is not None:
                     st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 中间数据折叠
-            if len(group_data) > 15:
-                st.write(f"###### 中间检测结果：")
-                with st.expander("展开查看中间检测结果"):
-                    for index, row in group_data.iloc[10:-5].iterrows():
+            if len(group_data) > 10:
+                st.write(f"###### 中间数据检测结果：")
+                with st.expander(f"展开查看工站 {station} 的中间数据检测结果"):
+                    for index, row in group_data.iloc[5:-5].iterrows():
                         rule_based_conclusion = "正常"
                         if row['颈部角度(°)'] > neck_threshold:
                             rule_based_conclusion = "颈部角度异常"
@@ -387,7 +387,7 @@ if uploaded_file is not None:
                             st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 后5条
-            st.write("###### 后5条检测结果：")
+            st.write(f"###### 工站 {station} 的后5条数据检测结果：")
             for index, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:

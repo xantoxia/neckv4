@@ -316,7 +316,7 @@ if uploaded_file is not None:
 
         # 遍历每个工站的数据
         for station, group_data in grouped:
-            st.write(f"#### 工站 {station} 的AI模型分析结果")
+            st.write(f"#### 工站{station}的AI模型分析结果")
         
            # 动态阈值计算
             neck_threshold = group_data['颈部角度(°)'].mean() + group_data['颈部角度(°)'].std()
@@ -337,7 +337,7 @@ if uploaded_file is not None:
             st.write("##### 逐条数据AI分析检测结果")
         
             # 前10条
-            st.write("###### 工站{station}的前5条数据检测结果：")
+            st.write(f"###### 工站{station}的前5条数据检测结果：")
             for index, row in group_data.iloc[:5].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
@@ -387,7 +387,7 @@ if uploaded_file is not None:
                             st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 后5条
-            st.write("###### 工站{station}的后5条检测结果：")
+            st.write(f"###### 工站{station}的后5条检测结果：")
             for index, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:

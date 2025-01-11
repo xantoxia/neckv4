@@ -440,7 +440,7 @@ if uploaded_file is not None:
     y_prob = model.predict_proba(X_test)[:, 1]
                
     # 调用函数生成图和结论
-    abnormal_indices = comprehensive_analysis(data, model)
+    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
     
     if abnormal_indices:
         st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")

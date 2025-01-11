@@ -429,9 +429,7 @@ if uploaded_file is not None:
         return total_abnormal_indices
         
     # 调用函数生成图和结论
-    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
-
-
+    comprehensive_analysis_by_workstation(data, model)
     
     # 机器学习
     if uploaded_file is not None:

@@ -32,8 +32,8 @@ latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
 
 # 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d%H%M%S")
-model_filename = f"jjmodel{timestamp}.joblib"
+timestamp = time.strftime("%Y%m%d_%H%M%S")
+model_filename = f"肩颈分析-模型-{timestamp}.joblib"
 
 
 # 上传文件到 GitHub
@@ -479,8 +479,15 @@ if uploaded_file is not None:
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
     # 上传新模型到 GitHub
-    upload_file_to_github(file_path, github_path, commit_message):
+    upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+    st.write("模型已保存并上传到 GitHub。")
+
+    # 更新最新模型信息
+    latest_info_path = "/tmp/" + latest_model_file
+    with open(latest_info_path, "w") as f:
+        f.write(model_filename)
+    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+    st.success("新模型已上传，并更新最新模型记录。")
     
-        
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

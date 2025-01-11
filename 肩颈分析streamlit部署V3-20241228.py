@@ -427,10 +427,7 @@ if uploaded_file is not None:
         
         # 返回所有工站的异常数据索引
         return total_abnormal_indices
-        
-    # 调用函数生成图和结论
-    comprehensive_analysis_by_workstation(data, model)
-    
+  
     # 机器学习
     if uploaded_file is not None:
         # 下载最新模型
@@ -500,6 +497,9 @@ if uploaded_file is not None:
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
+    # 调用函数生成图和结论
+    comprehensive_analysis_by_workstation(data, model)
+    
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"
     dump(model, local_model_path)

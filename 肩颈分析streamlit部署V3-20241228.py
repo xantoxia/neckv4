@@ -454,7 +454,10 @@ if uploaded_file is not None:
     model.fit(X_train, y_train)   
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
     y_prob = model.predict_proba(X_test)[:, 1]
-           
+
+    # 调用函数生成图和结论
+    comprehensive_analysis_by_workstation(data, model)
+    
     st.write("### 3.4  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
@@ -497,8 +500,7 @@ if uploaded_file is not None:
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
-    # 调用函数生成图和结论
-    comprehensive_analysis_by_workstation(data, model)
+
     
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"

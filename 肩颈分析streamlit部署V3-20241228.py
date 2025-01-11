@@ -427,7 +427,12 @@ if uploaded_file is not None:
         
         # 返回所有工站的异常数据索引
         return total_abnormal_indices
-   
+        
+    # 调用函数生成图和结论
+    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
+
+
+    
     # 机器学习
     if uploaded_file is not None:
         # 下载最新模型

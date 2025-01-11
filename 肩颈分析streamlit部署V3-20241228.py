@@ -341,7 +341,7 @@ if uploaded_file is not None:
         
             # 前5条
             st.write(f"###### 工站{station}的前5条数据检测结果：")
-            for index, row in group_data.iloc[:5].iterrows():
+            for i, row in group_data.iloc[:5].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
                     rule_based_conclusion = "颈部角度异常"
@@ -367,7 +367,7 @@ if uploaded_file is not None:
             if len(group_data) > 10:
                 st.write(f"###### 工站{station}的中间数据检测结果：")
                 with st.expander(f"展开查看工站{station}的中间数据检测结果"):
-                    for index, row in group_data.iloc[5:-5].iterrows():
+                    for i, row in group_data.iloc[5:-5].iterrows():
                         rule_based_conclusion = "正常"
                         if row['颈部角度(°)'] > neck_threshold:
                             rule_based_conclusion = "颈部角度异常"
@@ -391,7 +391,7 @@ if uploaded_file is not None:
         
             # 后5条
             st.write(f"###### 工站{station}的后5条检测结果：")
-            for index, row in group_data.iloc[-5:].iterrows():
+            for i, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
                     rule_based_conclusion = "颈部角度异常"

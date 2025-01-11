@@ -334,11 +334,11 @@ if uploaded_file is not None:
 
             # AI模型检测结果
             abnormal_indices = []
-            st.write("##### AI模型逐条数据检测结果")
+            st.write("##### 作业姿势AI模型检测结果")
         
             # 前10条
-            st.write(f"###### 工站 {station} 的前5条数据检测结果：")
-            for index, row in group_data.iloc[:5].iterrows():
+            st.write("###### 前10条检测结果：")
+            for index, row in group_data.iloc[:10].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
                     rule_based_conclusion = "颈部角度异常"
@@ -361,10 +361,10 @@ if uploaded_file is not None:
                     st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 中间数据折叠
-            if len(group_data) > 10:
-                st.write(f"###### 中间数据检测结果：")
-                with st.expander(f"展开查看工站 {station} 的中间数据检测结果"):
-                    for index, row in group_data.iloc[5:-5].iterrows():
+            if len(group_data) > 15:
+                st.write(f"###### 中间检测结果：")
+                with st.expander("展开查看中间检测结果"):
+                    for index, row in group_data.iloc[10:-5].iterrows():
                         rule_based_conclusion = "正常"
                         if row['颈部角度(°)'] > neck_threshold:
                             rule_based_conclusion = "颈部角度异常"
@@ -387,7 +387,7 @@ if uploaded_file is not None:
                             st.write(f"- 第 {index+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 后5条
-            st.write(f"###### 工站 {station} 的后5条数据检测结果：")
+            st.write("###### 后5条检测结果：")
             for index, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
@@ -412,17 +412,17 @@ if uploaded_file is not None:
         
             st.write(f"工站 {station} 分析完成。\n\n")
    
-        # 机器学习
-        if uploaded_file is not None:
-            # 下载最新模型
-             model_path = download_latest_model_from_github()
+    # 机器学习
+    if uploaded_file is not None:
+        # 下载最新模型
+        model_path = download_latest_model_from_github()
 
-        if model_path:
-            model = load(model_path)
-            st.write("加载最新模型进行分析...")
-        else:
-            model = RandomForestClassifier(random_state=42)
-            st.write("未加载到模型，训练新模型...")
+    if model_path:
+        model = load(model_path)
+        st.write("加载最新模型进行分析...")
+    else:
+        model = RandomForestClassifier(random_state=42)
+        st.write("未加载到模型，训练新模型...")
     
     # 模型训练或重新训练
     X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
@@ -448,63 +448,63 @@ if uploaded_file is not None:
         st.write("AI模型未检测到异常数据。")
 
     
-        st.write("### 3.4  AI模型质量评估")
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
-        y_prob = model.predict_proba(X_test)[:, 1]
-        fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-        roc_auc = auc(fpr, tpr)
+    st.write("### 3.4  AI模型质量评估")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
+    y_prob = model.predict_proba(X_test)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+    roc_auc = auc(fpr, tpr)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-        # 绘制ROC曲线
-        ax.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}', linestyle='-')
-        ax.plot([0, 1], [0, 1], 'r--', label="随机模型")
+    # 绘制ROC曲线
+    ax.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}', linestyle='-')
+    ax.plot([0, 1], [0, 1], 'r--', label="随机模型")
 
-        # 找到最佳阈值的坐标
-        best_threshold_index = (tpr - fpr).argmax()
-        best_threshold = thresholds[best_threshold_index]
-        best_fpr = fpr[best_threshold_index]
-        best_tpr = tpr[best_threshold_index]
+    # 找到最佳阈值的坐标
+    best_threshold_index = (tpr - fpr).argmax()
+    best_threshold = thresholds[best_threshold_index]
+    best_fpr = fpr[best_threshold_index]
+    best_tpr = tpr[best_threshold_index]
 
-        # 在ROC曲线上标注最佳阈值点
-        ax.scatter(best_fpr, best_tpr, color='red', label=f'最佳阈值: {best_threshold:.2f}')
-        ax.annotate(f'({best_fpr:.2f}, {best_tpr:.2f})',
-                    xy=(best_fpr, best_tpr),
-                    xytext=(best_fpr - 0.2, best_tpr - 0.1),
-                    arrowprops=dict(facecolor='red', arrowstyle='->'),
-                    fontsize=10,
-                    fontproperties=simhei_font)
+    # 在ROC曲线上标注最佳阈值点
+    ax.scatter(best_fpr, best_tpr, color='red', label=f'最佳阈值: {best_threshold:.2f}')
+    ax.annotate(f'({best_fpr:.2f}, {best_tpr:.2f})',
+                xy=(best_fpr, best_tpr),
+                xytext=(best_fpr - 0.2, best_tpr - 0.1),
+                arrowprops=dict(facecolor='red', arrowstyle='->'),
+                fontsize=10,
+                fontproperties=simhei_font)
 
-        # 设置标题和轴标签
-        ax.set_xlabel('假阳性率', fontproperties=simhei_font)
-        ax.set_ylabel('真阳性率', fontproperties=simhei_font)
-        ax.set_title('ROC曲线', fontproperties=simhei_font)
+    # 设置标题和轴标签
+    ax.set_xlabel('假阳性率', fontproperties=simhei_font)
+    ax.set_ylabel('真阳性率', fontproperties=simhei_font)
+    ax.set_title('ROC曲线', fontproperties=simhei_font)
 
-        # 添加图例，显式设置字体
-        ax.legend(loc='lower right', prop=simhei_font)
+    # 添加图例，显式设置字体
+    ax.legend(loc='lower right', prop=simhei_font)
 
-        # 在Streamlit中显示图像
-        st.pyplot(fig)
+    # 在Streamlit中显示图像
+    st.pyplot(fig)
      
-        st.write("\n**AI模型优化建议**")
-        st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
+    st.write("\n**AI模型优化建议**")
+    st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
-        # 保存新模型到临时文件夹
-        local_model_path = f"/tmp/{model_filename}"
-        dump(model, local_model_path)
-        st.write("模型已训练并保存到本地临时路径。") 
+    # 保存新模型到临时文件夹
+    local_model_path = f"/tmp/{model_filename}"
+    dump(model, local_model_path)
+    st.write("模型已训练并保存到本地临时路径。") 
     
-        # 上传新模型到 GitHub
-        upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
-        st.write("模型已保存并上传到 GitHub。")
+    # 上传新模型到 GitHub
+    upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+    st.write("模型已保存并上传到 GitHub。")
 
-        # 更新最新模型信息
-        latest_info_path = "/tmp/" + latest_model_file
-        with open(latest_info_path, "w") as f:
-            f.write(model_filename)
-        upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-        st.success("新模型已上传，并更新最新模型记录。")
+    # 更新最新模型信息
+    latest_info_path = "/tmp/" + latest_model_file
+    with open(latest_info_path, "w") as f:
+        f.write(model_filename)
+    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+    st.success("新模型已上传，并更新最新模型记录。")
     
-        st.write("#### 页面导出")
-        st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")
+    st.write("#### 页面导出")
+    st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

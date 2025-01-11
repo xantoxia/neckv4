@@ -337,7 +337,7 @@ if uploaded_file is not None:
             
             # AI模型检测结果
             abnormal_indices = []
-            st.write("##### 逐条数据AI分析检测结果")
+            st.write(f"##### 工站{station}的逐条数据AI分析检测结果")
         
             # 前5条
             st.write(f"###### 工站{station}的前5条数据检测结果：")
@@ -390,7 +390,7 @@ if uploaded_file is not None:
                             st.write(f"- 第 {i+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 后5条
-            st.write(f"###### 工站{station}的后5条检测结果：")
+            st.write(f"###### 工站{station}的后5条数据检测结果：")
             for i, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
@@ -413,8 +413,17 @@ if uploaded_file is not None:
                 else:
                     st.write(f"- 第 {i+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
-            st.write(f"工站{station}的数据AI分析完成。\n\n")
-   
+            st.write(f"工站{station}的逐条数据AI分析完成。\n\n")
+            
+    # 调用函数生成图和结论
+    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
+    
+    if abnormal_indices:
+        st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
+    else:
+        st.write("AI模型未检测到异常数据。")
+
+    
     # 机器学习
     if uploaded_file is not None:
         # 下载最新模型
@@ -441,16 +450,7 @@ if uploaded_file is not None:
     model.fit(X_train, y_train)   
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
     y_prob = model.predict_proba(X_test)[:, 1]
-               
-    # 调用函数生成图和结论
-    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
-    
-    if abnormal_indices:
-        st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
-    else:
-        st.write("AI模型未检测到异常数据。")
-
-    
+           
     st.write("### 3.4  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)

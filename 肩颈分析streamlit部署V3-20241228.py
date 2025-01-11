@@ -412,17 +412,17 @@ if uploaded_file is not None:
         
             st.write(f"工站 {station} 分析完成。\n\n")
    
-            # 机器学习
-            if uploaded_file is not None:
-                # 下载最新模型
-                model_path = download_latest_model_from_github()
+        # 机器学习
+        if uploaded_file is not None:
+            # 下载最新模型
+             model_path = download_latest_model_from_github()
 
-            if model_path:
-               model = load(model_path)
-               st.write("加载最新模型进行分析...")
-            else:
-                model = RandomForestClassifier(random_state=42)
-                st.write("未加载到模型，训练新模型...")
+        if model_path:
+            model = load(model_path)
+            st.write("加载最新模型进行分析...")
+        else:
+            model = RandomForestClassifier(random_state=42)
+            st.write("未加载到模型，训练新模型...")
     
         # 模型训练或重新训练
         X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]

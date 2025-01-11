@@ -295,6 +295,9 @@ if uploaded_file is not None:
             neck_exceed_ratio = neck_exceed_count / total_time_points  # 超过 20° 的时间点占比
             
             if neck_exceed_count > 0:
+                # 初始化变量，确保在所有条件下都有值
+                neck_risk_level = "一定"
+                neck_color = "black"
                 
                 # 根据占比分类 MSD 风险等级
                 if neck_exceed_ratio > 0.5:
@@ -303,9 +306,6 @@ if uploaded_file is not None:
                 elif neck_exceed_ratio >= 0.25:
                     risk_level = "中等"
                     neck_color = "orange"
-                else:
-                    risk_level = "一定"
-                    neck_color = "black"
             
                 st.markdown(f"<span style='color:{neck_color};'>- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {neck_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:
@@ -316,6 +316,10 @@ if uploaded_file is not None:
             shoulder_exceed_ratio = shoulder_exceed_count / total_time_points  # 超过 45° 的时间点占比
 
             if shoulder_exceed_count > 0:
+                # 初始化变量，确保在所有条件下都有值
+                shoulder_risk_level = "一定"
+                shoulder_color = "black"
+                
                 # 根据占比分类 MSD 风险等级
                 if shoulder_exceed_ratio > 0.5:
                     shoulder_risk_level = "较高"
@@ -323,9 +327,6 @@ if uploaded_file is not None:
                 elif shoulder_exceed_ratio >= 0.25:
                     shoulder_risk_level = "中等"
                     shoulder_color = "orange"
-                else:
-                    shoulder_risk_level = "一定"
-                    shoulder_color = "black"
             
                 st.markdown(f"<span style='color:{shoulder_color};'>- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:

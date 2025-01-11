@@ -19,6 +19,71 @@ from joblib import dump, load
 from matplotlib import font_manager
 from github import Github
 
+# 动态读取Token
+token = os.getenv("GITHUB_TOKEN")
+if not token:
+    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
+    st.stop()
+
+# GitHub 配置
+repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
+models_folder = "models/"  # GitHub 仓库中模型文件存储路径
+latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
+commit_message = "从Streamlit更新模型文件"  # 提交信息
+
+# 定义带时间戳的备份文件名
+timestamp = time.strftime("%Y%m%d%H%M%S")
+model_filename = f"jjmodel{timestamp}.joblib"
+
+# 保存和上传新模型
+def save_and_upload_new_model(model, model_filename, commit_message):
+    # 保存新模型到临时文件夹
+    local_model_path = f"/tmp/{model_filename}"
+    dump(model, local_model_path)
+    st.write("模型已保存到本地临时路径。")
+
+    # 下载最新模型以确保流程的完整性
+    latest_model_path = download_latest_model_from_github()
+
+    if latest_model_path:
+        # 上传新模型到 GitHub
+        upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+        st.write("模型已保存并上传到 GitHub。")
+
+        # 更新最新模型信息
+        latest_info_path = "/tmp/" + latest_model_file
+        with open(latest_info_path, "w") as f:
+            f.write(model_filename)
+        upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+        st.success("新模型已上传，并更新最新模型记录。")
+    else:
+        st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
+
+# 下载最新模型文件
+def download_latest_model_from_github():
+    try:
+        g = Github(token)
+        repo = g.get_repo(repo_name)
+
+    # 获取最新模型信息
+        try:
+            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+            latest_model_path = models_folder + latest_info.strip()
+            st.write(f"最新模型路径：{latest_model_path}")
+
+        # 下载最新模型文件
+            file_content = repo.get_contents(latest_model_path)
+            with open("/tmp/latest_model.joblib", "wb") as f:
+                f.write(file_content.decoded_content)
+            st.success("成功下载最新模型！")
+            return latest_model_path
+        except:
+            st.warning("未找到最新模型信息文件，无法下载模型。")
+            return None
+    except Exception as e:
+        st.error(f"从 GitHub 下载模型失败：{e}")
+        return None
+
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
 plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
@@ -243,71 +308,6 @@ if uploaded_file is not None:
     # 调用函数生成图和结论
     generate_line_plots_with_threshold(data)
 
-    # 动态读取Token
-    token = os.getenv("GITHUB_TOKEN")
-    if not token:
-        st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
-        st.stop()
-
-    # GitHub 配置
-    repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
-    models_folder = "models/"  # GitHub 仓库中模型文件存储路径
-    latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
-    commit_message = "从Streamlit更新模型文件"  # 提交信息
-
-    # 定义带时间戳的备份文件名
-    timestamp = time.strftime("%Y%m%d%H%M%S")
-    model_filename = f"jjmodel{timestamp}.joblib"
-
-    # 保存和上传新模型
-    def save_and_upload_new_model(model, model_filename, commit_message):
-        # 保存新模型到临时文件夹
-        local_model_path = f"/tmp/{model_filename}"
-        dump(model, local_model_path)
-        st.write("模型已保存到本地临时路径。")
-
-        # 下载最新模型以确保流程的完整性
-        latest_model_path = download_latest_model_from_github()
-
-        if latest_model_path:
-            # 上传新模型到 GitHub
-            upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
-            st.write("模型已保存并上传到 GitHub。")
-
-            # 更新最新模型信息
-            latest_info_path = "/tmp/" + latest_model_file
-            with open(latest_info_path, "w") as f:
-                f.write(model_filename)
-            upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-            st.success("新模型已上传，并更新最新模型记录。")
-        else:
-            st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
-
-    # 下载最新模型文件
-    def download_latest_model_from_github():
-        try:
-            g = Github(token)
-            repo = g.get_repo(repo_name)
-
-        # 获取最新模型信息
-            try:
-                latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-                latest_model_path = models_folder + latest_info.strip()
-                st.write(f"最新模型路径：{latest_model_path}")
-
-            # 下载最新模型文件
-                file_content = repo.get_contents(latest_model_path)
-                with open("/tmp/latest_model.joblib", "wb") as f:
-                    f.write(file_content.decoded_content)
-                st.success("成功下载最新模型！")
-                return latest_model_path
-            except:
-                st.warning("未找到最新模型信息文件，无法下载模型。")
-                return None
-        except Exception as e:
-            st.error(f"从 GitHub 下载模型失败：{e}")
-            return None
- 
      # 综合分析
     def comprehensive_analysis(data, model):
         neck_threshold = data['颈部角度(°)'].mean() + data['颈部角度(°)'].std()

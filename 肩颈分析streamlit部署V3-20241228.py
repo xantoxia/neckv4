@@ -291,8 +291,20 @@ if uploaded_file is not None:
         
             # 颈部角度分析
             neck_exceed_count = (group_data['颈部角度(°)'] > 20).sum()
+            total_time_points = len(group_data)  # 总时间点数
+            neck_exceed_ratio = neck_exceed_count / total_time_points  # 超过 20° 的时间点占比
+            
             if neck_exceed_count > 0:
-                st.write(f"- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，存在一定 MSD 风险。")
+                
+                # 根据占比分类 MSD 风险等级
+                if neck_exceed_ratio > 0.5:
+                    risk_level = "较高"
+                elif neck_exceed_ratio >= 0.25:
+                    risk_level = "中等"
+                else:
+                    risk_level = "一定"
+            
+                st.write(f"- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {risk_level} MSD 风险。")
             else:
                 st.write("- 颈部角度未超过 20°，MSD 风险较低。")
         
@@ -499,8 +511,6 @@ if uploaded_file is not None:
      
     st.write("\n**AI模型优化建议**")
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
-
-
     
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"

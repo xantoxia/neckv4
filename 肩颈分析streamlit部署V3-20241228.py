@@ -505,6 +505,7 @@ if uploaded_file is not None:
 
     # 上传新模型到 GitHub
     save_and_upload_new_model(model, model_filename, commit_message)
+    upload_file_to_github(file_path, github_path, commit_message):
     
         
     st.write("#### 页面导出")

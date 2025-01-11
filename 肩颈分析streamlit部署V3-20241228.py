@@ -57,31 +57,6 @@ def upload_file_to_github(file_path, github_path, commit_message):
     except Exception as e:
         st.error(f"上传文件到 GitHub 失败：{e}")
 
-# 保存和上传新模型
-def save_and_upload_new_model(model, model_filename, commit_message):
-   
-    # 保存新模型到临时文件夹
-    local_model_path = f"/tmp/{model_filename}"
-    dump(model, local_model_path)
-    st.write("模型已保存到本地临时路径。")
-
-    # 下载最新模型以确保流程的完整性
-    latest_model_path = download_latest_model_from_github()
-
-    if latest_model_path:
-        # 上传新模型到 GitHub
-        upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
-        st.write("模型已保存并上传到 GitHub。")
-
-        # 更新最新模型信息
-        latest_info_path = "/tmp/" + latest_model_file
-        with open(latest_info_path, "w") as f:
-            f.write(model_filename)
-        upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-        st.success("新模型已上传，并更新最新模型记录。")
-    else:
-        st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
-
 # 下载最新模型文件
 def download_latest_model_from_github():
     try:
@@ -504,7 +479,6 @@ if uploaded_file is not None:
     st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
 
     # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
     upload_file_to_github(file_path, github_path, commit_message):
     
         

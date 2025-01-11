@@ -310,8 +310,18 @@ if uploaded_file is not None:
         
             # 肩部前屈角度分析
             shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
+            shoulder_exceed_ratio = shoulder_exceed_count / total_time_points  # 超过 45° 的时间点占比
+
             if shoulder_exceed_count > 0:
-                st.write(f"- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，请注意作业时是否有手部支撑。")
+                # 根据占比分类 MSD 风险等级
+                if shoulder_exceed_ratio > 0.5:
+                    shoulder_risk_level = "较高"
+                elif shoulder_exceed_ratio >= 0.25:
+                    shoulder_risk_level = "中等"
+                else:
+                    shoulder_risk_level = "一定"
+            
+                st.write(f"- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。")
             else:
                 st.write("- 肩部前屈角度未超过 45°，动作幅度较为自然。")
                 

@@ -299,14 +299,17 @@ if uploaded_file is not None:
                 # 根据占比分类 MSD 风险等级
                 if neck_exceed_ratio > 0.5:
                     risk_level = "较高"
+                    neck_color = "red"
                 elif neck_exceed_ratio >= 0.25:
                     risk_level = "中等"
+                    neck_color = "orange"
                 else:
                     risk_level = "一定"
+                    neck_color = "black"
             
-                st.write(f"- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {risk_level} MSD 风险。")
+                st.markdown(f"<span style='color:{neck_color};'>- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {neck_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:
-                st.write("- 颈部角度未超过 20°，MSD 风险较低。")
+                st.write("- 作业时颈部角度未超过 20°，MSD 风险较低。")
         
             # 肩部前屈角度分析
             shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
@@ -316,14 +319,17 @@ if uploaded_file is not None:
                 # 根据占比分类 MSD 风险等级
                 if shoulder_exceed_ratio > 0.5:
                     shoulder_risk_level = "较高"
+                    shoulder_color = "red"
                 elif shoulder_exceed_ratio >= 0.25:
                     shoulder_risk_level = "中等"
+                    shoulder_color = "orange"
                 else:
                     shoulder_risk_level = "一定"
+                    shoulder_color = "black"
             
-                st.write(f"- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。")
+                st.markdown(f"<span style='color:{shoulder_color};'>- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:
-                st.write("- 肩部前屈角度未超过 45°，动作幅度较为自然。")
+                st.write("- 作业时肩部前屈角度未超过 45°，动作幅度较为自然，MSD风险较低。")
                 
     # 调用函数生成图和结论
     generate_line_plots_with_threshold(data)

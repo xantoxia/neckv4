@@ -424,23 +424,23 @@ if uploaded_file is not None:
             model = RandomForestClassifier(random_state=42)
             st.write("未加载到模型，训练新模型...")
     
-        # 模型训练或重新训练
-        X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
-        if 'Label' not in data.columns:
-            np.random.seed(42)
-            data['Label'] = np.random.choice([0, 1], size=len(data))
-        y = data['Label']
+    # 模型训练或重新训练
+    X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
+    if 'Label' not in data.columns:
+        np.random.seed(42)
+        data['Label'] = np.random.choice([0, 1], size=len(data))
+    y = data['Label']
 
-        # 数据预处理：重新定义标签
-        data['Label'] = ((data['颈部角度(°)'] > 20) | (data['Label'] == 1)).astype(int)
+    # 数据预处理：重新定义标签
+    data['Label'] = ((data['颈部角度(°)'] > 20) | (data['Label'] == 1)).astype(int)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        model.fit(X_train, y_train)   
-        y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
-        y_prob = model.predict_proba(X_test)[:, 1]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    model.fit(X_train, y_train)   
+    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
+    y_prob = model.predict_proba(X_test)[:, 1]
                
-        # 调用函数生成图和结论
-        abnormal_indices = comprehensive_analysis_by_workstation(data, model)
+    # 调用函数生成图和结论
+    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
     
         if abnormal_indices:
             st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")

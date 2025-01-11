@@ -314,6 +314,9 @@ if uploaded_file is not None:
         # 按 '工站(w)' 分组
         grouped = data.groupby('工站(w)')
 
+        # 用于记录所有工站的异常索引
+        total_abnormal_indices = []
+    
         # 遍历每个工站的数据
         for station, group_data in grouped:
             st.write(f"#### 工站{station}的AI模型分析结果")
@@ -412,18 +415,19 @@ if uploaded_file is not None:
                     abnormal_indices.append(i)
                 else:
                     st.write(f"- 第 {i+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
+    
+            # 总结性描述
+            if abnormal_indices:
+                st.write(f"##### 工站{station}总结：AI模型共检测到 {len(abnormal_indices)} 条异常数据。")
+            else:
+                st.write(f"##### 工站{station}总结：AI模型未检测到异常数据。")
         
-            st.write(f"工站{station}的逐条数据AI分析完成。\n\n")
-            
-    # 调用函数生成图和结论
-    abnormal_indices = comprehensive_analysis_by_workstation(data, model)
-    
-    if abnormal_indices:
-        st.write(f"#### AI模型共检测到 {len(abnormal_indices)} 条异常数据")
-    else:
-        st.write("AI模型未检测到异常数据。")
-
-    
+             # 记录工站异常数据索引
+            total_abnormal_indices.extend(abnormal_indices)
+        
+        # 返回所有工站的异常数据索引
+        return total_abnormal_indices
+   
     # 机器学习
     if uploaded_file is not None:
         # 下载最新模型

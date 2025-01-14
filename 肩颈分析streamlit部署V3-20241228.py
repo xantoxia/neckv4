@@ -71,8 +71,7 @@ def save_and_upload_new_model(model, model_filename, commit_message):
     if latest_model_path:
         # 上传新模型到 GitHub
         upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
-        st.write("模型已保存并上传到 GitHub。")
-
+        
         # 更新最新模型信息
         latest_info_path = "/tmp/" + latest_model_file
         with open(latest_info_path, "w") as f:
@@ -562,13 +561,6 @@ if uploaded_file is not None:
     # 上传新模型到 GitHub
     save_and_upload_new_model(model, model_filename, commit_message)
     st.write("模型已保存并上传到 GitHub。")
-
-    # 更新最新模型信息
-    latest_info_path = "/tmp/" + latest_model_file
-    with open(latest_info_path, "w") as f:
-        f.write(model_filename)
-    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-    st.success("新模型已上传，并更新最新模型记录。")
     
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

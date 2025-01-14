@@ -63,8 +63,7 @@ def save_and_upload_new_model(model, model_filename, commit_message):
     # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"
     dump(model, local_model_path)
-    st.write("模型已保存到本地临时路径。")
-
+   
     # 下载最新模型以确保流程的完整性
     latest_model_path = download_latest_model_from_github()
 

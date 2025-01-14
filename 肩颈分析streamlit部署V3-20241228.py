@@ -35,6 +35,7 @@ commit_message = "从Streamlit更新模型文件"  # 提交信息
 timestamp = time.strftime("%Y%m%d_%H%M%S")
 model_filename = f"肩颈分析-模型-{timestamp}.joblib"
 
+
 # 上传文件到 GitHub
 def upload_file_to_github(file_path, github_path, commit_message):
     try:
@@ -80,33 +81,6 @@ def download_latest_model_from_github():
     except Exception as e:
         st.error(f"从 GitHub 下载模型失败：{e}")
         return None
-        
-    # 机器学习
-    if uploaded_file is not None:
-        # 下载最新模型
-        model_path = download_latest_model_from_github()
-
-    if model_path:
-        model = load(model_path)
-        st.write("加载最新模型进行分析...")
-    else:
-        model = RandomForestClassifier(random_state=42)
-        st.write("未加载到模型，训练新模型...")
-    
-    # 模型训练或重新训练
-    X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
-    if 'Label' not in data.columns:
-        np.random.seed(42)
-        data['Label'] = np.random.choice([0, 1], size=len(data))
-    y = data['Label']
-
-    # 数据预处理：重新定义标签
-    data['Label'] = ((data['颈部角度(°)'] > 20) | (data['Label'] == 1)).astype(int)
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    model.fit(X_train, y_train)   
-    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
-    y_prob = model.predict_proba(X_test)[:, 1]
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
@@ -483,6 +457,33 @@ if uploaded_file is not None:
         # 返回所有工站的异常数据索引
         return total_abnormal_indices
   
+    # 机器学习
+    if uploaded_file is not None:
+        # 下载最新模型
+        model_path = download_latest_model_from_github()
+
+    if model_path:
+        model = load(model_path)
+        st.write("加载最新模型进行分析...")
+    else:
+        model = RandomForestClassifier(random_state=42)
+        st.write("未加载到模型，训练新模型...")
+    
+    # 模型训练或重新训练
+    X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
+    if 'Label' not in data.columns:
+        np.random.seed(42)
+        data['Label'] = np.random.choice([0, 1], size=len(data))
+    y = data['Label']
+
+    # 数据预处理：重新定义标签
+    data['Label'] = ((data['颈部角度(°)'] > 20) | (data['Label'] == 1)).astype(int)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    model.fit(X_train, y_train)   
+    y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
+    y_prob = model.predict_proba(X_test)[:, 1]
+
     # 调用函数生成图和结论
     comprehensive_analysis_by_workstation(data, model)
     

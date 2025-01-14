@@ -51,16 +51,16 @@ def upload_file_to_github(file_path, github_path, commit_message):
     
     if latest_model_path:
         
-        # 检查文件是否存在
-        try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-        except:
-            repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
-    except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
+            # 检查文件是否存在
+            try:
+                file = repo.get_contents(github_path)
+                repo.update_file(github_path, commit_message, content, file.sha)
+                st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
+            except:
+                repo.create_file(github_path, commit_message, content)
+                st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
+        except Exception as e:
+            st.error(f"上传文件到 GitHub 失败：{e}")
     
     else:
         st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")

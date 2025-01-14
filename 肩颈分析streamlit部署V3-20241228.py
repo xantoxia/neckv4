@@ -556,7 +556,6 @@ if uploaded_file is not None:
    
     # 上传新模型到 GitHub
     save_and_upload_new_model(model, model_filename, commit_message)
-    st.write("模型已保存并上传到 GitHub。")
     
     st.write("#### 页面导出")
     st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")

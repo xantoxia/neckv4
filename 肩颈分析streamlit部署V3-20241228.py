@@ -45,7 +45,12 @@ def upload_file_to_github(file_path, github_path, commit_message):
         # 读取文件内容
         with open(file_path, "rb") as f:
             content = f.read()
- 
+
+    # 下载最新模型以确保流程的完整性
+    latest_model_path = download_latest_model_from_github()
+    
+    if latest_model_path:
+        
         # 检查文件是否存在
         try:
             file = repo.get_contents(github_path)
@@ -56,6 +61,10 @@ def upload_file_to_github(file_path, github_path, commit_message):
             st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
     except Exception as e:
         st.error(f"上传文件到 GitHub 失败：{e}")
+    
+    else:
+        st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
+
 
 # 下载最新模型文件
 def download_latest_model_from_github():

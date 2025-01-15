@@ -510,7 +510,7 @@ if uploaded_file is not None:
     y_prob = model.predict_proba(X_test)[:, 1]
 
     # 调用函数生成图和结论
-    comprehensive_analysis_by_workstation(data, model)
+    total_abnormal_indices = comprehensive_analysis_by_workstation(data, model)
     
     st.write("### 3.4  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)

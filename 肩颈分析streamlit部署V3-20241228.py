@@ -92,20 +92,20 @@ def download_latest_model_from_github():
         time.sleep(1)
 
     # 获取最新模型信息
-        try:
-            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-            latest_model_path = models_folder + latest_info.strip()
-            st.write(f"最新模型路径：{latest_model_path}")
+
+        latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+        latest_model_path = models_folder + latest_info.strip()
+        st.write(f"最新模型路径：{latest_model_path}")
 
         # 下载最新模型文件
-            file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
-                f.write(file_content.decoded_content)
-            st.success("成功下载最新模型！")
-            return latest_model_path
-        except:
-            st.warning("未找到最新模型信息文件，无法下载模型。")
-            return None
+        file_content = repo.get_contents(latest_model_path)
+        with open("/tmp/latest_model.joblib", "wb") as f:
+            f.write(file_content.decoded_content)
+        st.success("成功下载最新模型！")
+        return latest_model_path
+    except:
+        st.warning("未找到最新模型信息文件，无法下载模型。")
+        return None
     except Exception as e:
         st.error(f"从 GitHub 下载模型失败：{e}")
         return None

@@ -87,6 +87,9 @@ def download_latest_model_from_github():
     try:
         g = Github(token)
         repo = g.get_repo(repo_name)
+        
+        # 增加延迟
+        time.sleep(1)
 
     # 获取最新模型信息
         try:
@@ -484,6 +487,9 @@ if uploaded_file is not None:
   
     # 机器学习
     if uploaded_file is not None:
+        # 增加延迟
+        time.sleep(1)
+        
         # 下载最新模型
         model_path = download_latest_model_from_github()
 

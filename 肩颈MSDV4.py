@@ -107,8 +107,8 @@ def download_latest_model_from_github():
             st.success("成功下载最新模型！")
             return latest_model_path
         except Exception as e:
-        st.error(f"下载模型失败，出错信息: {e}")
-        return None
+            st.error(f"下载模型失败，出错信息: {e}")
+            return None
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")

@@ -106,12 +106,9 @@ def download_latest_model_from_github():
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path
-        except:
-            st.warning("未找到最新模型信息文件，无法下载模型。")
+        except Exception as e:
+            st.warning(f"下载模型失败，出错信息: {e}")
             return None
-    except Exception as e:
-        st.error(f"从 GitHub 下载模型失败：{e}")
-        return None
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")

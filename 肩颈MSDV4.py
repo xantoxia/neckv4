@@ -294,7 +294,7 @@ if uploaded_file is not None:
             
                 st.markdown(f"<span style='color:{neck_color};'>- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {neck_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:
-                st.write("-作业时颈部角度未超过20°，MSD风险较低。")
+                st.write("-作业时颈部角度未超过20°，颈部MSD风险较低。")
         
             # 肩部前屈角度分析
             shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
@@ -315,7 +315,7 @@ if uploaded_file is not None:
             
                 st.markdown(f"<span style='color:{shoulder_color};'>- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。</span>", unsafe_allow_html=True)
             else:
-                st.write("-作业时肩部前屈角度未超过45°，动作幅度较为自然，MSD风险较低。")
+                st.write("-作业时肩部前屈角度未超过45°，动作幅度较为自然，肩部MSD风险较低。")
                 
     # 调用函数生成图和结论
     generate_line_plots_with_threshold(data)

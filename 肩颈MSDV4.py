@@ -106,9 +106,6 @@ def download_latest_model_from_github():
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path
-        except:
-            st.warning("下载模型失败，出错信息: {e}。")
-            return None
     except Exception as e:
         st.error(f"下载模型失败，出错信息: {e}")
         return None

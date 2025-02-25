@@ -176,6 +176,7 @@ if uploaded_file is not None:
 
     # 调用函数
     summarize_by_station(data)
+    generate_visualizations(data)
 
 def generate_visualizations(data):
     st.write("## 各工站数据可视化分析")

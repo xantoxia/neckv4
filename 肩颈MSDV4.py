@@ -176,7 +176,6 @@ if uploaded_file is not None:
 
     # 调用函数
     summarize_by_station(data)
-    generate_visualizations(data)
 
 def generate_visualizations(data):
     st.write("## 各工站数据可视化分析")
@@ -297,7 +296,10 @@ def generate_visualizations(data):
             )
         else:
             st.write("- 作业时肩部前屈角度未超过45°，动作幅度较为自然，肩部MSD风险较低。")
-              
+
+    # 调用函数
+    generate_visualizations(data)
+    
      # 综合分析
     def comprehensive_analysis_by_workstation(data, model):
 

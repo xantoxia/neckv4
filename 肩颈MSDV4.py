@@ -177,125 +177,125 @@ if uploaded_file is not None:
     # 调用函数
     summarize_by_station(data)
 
-def generate_visualizations(data):
-    st.write("## 各工站数据可视化分析")
-    
-    # 按 '工站(w)' 分组
-    grouped = data.groupby('工站(w)')
-    
-    # 遍历每个工站
-    for station, group_data in grouped:
-        st.write(f"### 工站 {station} 的数据可视化")
+    def generate_visualizations(data):
+        st.write("## 各工站数据可视化分析")
         
-        # ========= 1. 3D 散点图 =========
-        st.write("#### 3D 散点图")
-        fig = plt.figure(figsize=(10, 7))
-        ax = fig.add_subplot(111, projection='3d')
+        # 按 '工站(w)' 分组
+        grouped = data.groupby('工站(w)')
         
-        scatter = ax.scatter(
-            group_data['时间(s)'], 
-            group_data['颈部角度(°)'], 
-            group_data['肩部前屈角度(°)'], 
-            c=group_data['肩部外展角度(°)'], 
-            cmap='viridis'
-        )
-        
-        # 设置坐标轴标签
-        ax.set_xlabel('时间(s)', fontproperties=simhei_font)
-        ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
-        ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
-        
-        # 设置图形标题
-        plt.title(f'工站 {station} 肩颈角度3D可视化散点图', fontproperties=simhei_font)
-        
-        # 添加 colorbar
-        cbar = fig.colorbar(scatter, ax=ax)
-        cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
-        
-        # 显示图形
-        st.pyplot(fig)
-        
-        # 动态分析结论（3D散点图）
-        st.write(f"**工站 {station} 的动态分析结论（3D散点图）：**")
-        neck_Flexion_max = group_data['颈部角度(°)'].max()
-        if neck_Flexion_max < 20:
-            st.write("- 作业时颈部角度处于20°之内，MSD风险较低。")
-        elif 20 <= neck_Flexion_max <= 40:
-            st.write("- 部分时间点颈部角度超过20°，存在一定的MSD风险。")
-        else:
-            st.write("- 部分时间点颈部角度超过40°，请注意可能存在极端低头动作。")
-        
-        shoulder_Flexion_max = group_data['肩部前屈角度(°)'].max()
-        if shoulder_Flexion_max < 15:
-            st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
-        elif shoulder_Flexion_max >= 45:
-            st.write("- 部分时间点肩部前屈角度大于45°，请注意作业时是否有手部支撑。")
-        
-        if group_data['肩部外展角度(°)'].mean() > 20:
-            st.write("- 肩部外展角度的整体幅度较大，上臂作业时运动强度可能较高。")
-        
-        # ========= 2. 肩颈角度时间变化折线图 =========
-        st.write("#### 肩颈角度时间变化折线图（带水平预警线）")
-        fig2, ax2 = plt.subplots(figsize=(10, 6))
-        
-        ax2.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)
-        ax2.plot(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', color='green', linewidth=2)
-        
-        # 添加水平预警线
-        ax2.axhline(y=20, color='red', linestyle='--', linewidth=1.5, label='颈部角度预警线 (20°)')
-        ax2.axhline(y=45, color='orange', linestyle='--', linewidth=1.5, label='肩部前屈角度预警线 (45°)')
-        
-        # 设置坐标轴和标题
-        ax2.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
-        ax2.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
-        ax2.set_title(f'工站 {station} 的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
-        ax2.legend(prop=simhei_font, fontsize=10)
-        
-        st.pyplot(fig2)
-        
-        # 动态分析结论（折线图）
-        st.write(f"**工站 {station} 的动态分析结论（折线图）：**")
-        
-        # 颈部角度分析
-        neck_exceed_count = (group_data['颈部角度(°)'] > 20).sum()
-        total_time_points = len(group_data)
-        neck_exceed_ratio = neck_exceed_count / total_time_points
-        
-        if neck_exceed_count > 0:
-            neck_risk_level = "轻度"
-            neck_color = "black"
-            if neck_exceed_ratio > 0.5:
-                neck_risk_level = "较高"
-                neck_color = "red"
-            elif neck_exceed_ratio >= 0.25:
-                neck_risk_level = "中等"
-                neck_color = "orange"
-            st.markdown(
-                f"<span style='color:{neck_color};'>- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {neck_risk_level} MSD 风险。</span>", 
-                unsafe_allow_html=True
+        # 遍历每个工站
+        for station, group_data in grouped:
+            st.write(f"### 工站 {station} 的数据可视化")
+            
+            # ========= 1. 3D 散点图 =========
+            st.write("#### 3D 散点图")
+            fig = plt.figure(figsize=(10, 7))
+            ax = fig.add_subplot(111, projection='3d')
+            
+            scatter = ax.scatter(
+                group_data['时间(s)'], 
+                group_data['颈部角度(°)'], 
+                group_data['肩部前屈角度(°)'], 
+                c=group_data['肩部外展角度(°)'], 
+                cmap='viridis'
             )
-        else:
-            st.write("- 作业时颈部角度未超过20°，颈部MSD风险较低。")
-        
-        # 肩部前屈角度分析
-        shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
-        shoulder_exceed_ratio = shoulder_exceed_count / total_time_points
-        
-        if shoulder_exceed_count > 0:
-            shoulder_risk_level = "轻度"
-            shoulder_color = "black"
-            if shoulder_exceed_ratio > 0.5:
-                shoulder_risk_level = "较高"
-                shoulder_color = "red"
-            elif shoulder_exceed_ratio >= 0.25:
-                shoulder_risk_level = "中等"
-                shoulder_color = "orange"
-            st.markdown(
-                f"<span style='color:{shoulder_color};'>- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。</span>",
-                unsafe_allow_html=True
-            )
-        else:
-            st.write("- 作业时肩部前屈角度未超过45°，动作幅度较为自然，肩部MSD风险较低。")
+            
+            # 设置坐标轴标签
+            ax.set_xlabel('时间(s)', fontproperties=simhei_font)
+            ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
+            ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
+            
+            # 设置图形标题
+            plt.title(f'工站 {station} 肩颈角度3D可视化散点图', fontproperties=simhei_font)
+            
+            # 添加 colorbar
+            cbar = fig.colorbar(scatter, ax=ax)
+            cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
+            
+            # 显示图形
+            st.pyplot(fig)
+            
+            # 动态分析结论（3D散点图）
+            st.write(f"**工站 {station} 的动态分析结论（3D散点图）：**")
+            neck_Flexion_max = group_data['颈部角度(°)'].max()
+            if neck_Flexion_max < 20:
+                st.write("- 作业时颈部角度处于20°之内，MSD风险较低。")
+            elif 20 <= neck_Flexion_max <= 40:
+                st.write("- 部分时间点颈部角度超过20°，存在一定的MSD风险。")
+            else:
+                st.write("- 部分时间点颈部角度超过40°，请注意可能存在极端低头动作。")
+            
+            shoulder_Flexion_max = group_data['肩部前屈角度(°)'].max()
+            if shoulder_Flexion_max < 15:
+                st.write("- 肩部前屈角度的波动较小，动作幅度相对一致。")
+            elif shoulder_Flexion_max >= 45:
+                st.write("- 部分时间点肩部前屈角度大于45°，请注意作业时是否有手部支撑。")
+            
+            if group_data['肩部外展角度(°)'].mean() > 20:
+                st.write("- 肩部外展角度的整体幅度较大，上臂作业时运动强度可能较高。")
+            
+            # ========= 2. 肩颈角度时间变化折线图 =========
+            st.write("#### 肩颈角度时间变化折线图（带水平预警线）")
+            fig2, ax2 = plt.subplots(figsize=(10, 6))
+            
+            ax2.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)
+            ax2.plot(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', color='green', linewidth=2)
+            
+            # 添加水平预警线
+            ax2.axhline(y=20, color='red', linestyle='--', linewidth=1.5, label='颈部角度预警线 (20°)')
+            ax2.axhline(y=45, color='orange', linestyle='--', linewidth=1.5, label='肩部前屈角度预警线 (45°)')
+            
+            # 设置坐标轴和标题
+            ax2.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
+            ax2.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
+            ax2.set_title(f'工站 {station} 的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
+            ax2.legend(prop=simhei_font, fontsize=10)
+            
+            st.pyplot(fig2)
+            
+            # 动态分析结论（折线图）
+            st.write(f"**工站 {station} 的动态分析结论（折线图）：**")
+            
+            # 颈部角度分析
+            neck_exceed_count = (group_data['颈部角度(°)'] > 20).sum()
+            total_time_points = len(group_data)
+            neck_exceed_ratio = neck_exceed_count / total_time_points
+            
+            if neck_exceed_count > 0:
+                neck_risk_level = "轻度"
+                neck_color = "black"
+                if neck_exceed_ratio > 0.5:
+                    neck_risk_level = "较高"
+                    neck_color = "red"
+                elif neck_exceed_ratio >= 0.25:
+                    neck_risk_level = "中等"
+                    neck_color = "orange"
+                st.markdown(
+                    f"<span style='color:{neck_color};'>- 有 {neck_exceed_count} 个时间点颈部角度超过 20°，占比 {neck_exceed_ratio:.2%}，颈部存在 {neck_risk_level} MSD 风险。</span>", 
+                    unsafe_allow_html=True
+                )
+            else:
+                st.write("- 作业时颈部角度未超过20°，颈部MSD风险较低。")
+            
+            # 肩部前屈角度分析
+            shoulder_exceed_count = (group_data['肩部前屈角度(°)'] > 45).sum()
+            shoulder_exceed_ratio = shoulder_exceed_count / total_time_points
+            
+            if shoulder_exceed_count > 0:
+                shoulder_risk_level = "轻度"
+                shoulder_color = "black"
+                if shoulder_exceed_ratio > 0.5:
+                    shoulder_risk_level = "较高"
+                    shoulder_color = "red"
+                elif shoulder_exceed_ratio >= 0.25:
+                    shoulder_risk_level = "中等"
+                    shoulder_color = "orange"
+                st.markdown(
+                    f"<span style='color:{shoulder_color};'>- 有 {shoulder_exceed_count} 个时间点肩部前屈角度超过 45°，占比 {shoulder_exceed_ratio:.2%}，肩部存在 {shoulder_risk_level} MSD 风险。</span>",
+                    unsafe_allow_html=True
+                )
+            else:
+                st.write("- 作业时肩部前屈角度未超过45°，动作幅度较为自然，肩部MSD风险较低。")
 
     # 调用函数
     generate_visualizations(data)

@@ -32,8 +32,8 @@ latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
 
 # 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d_%H%M%S")
-model_filename = f"MSD_{timestamp}.joblib"
+timestamp = time.strftime("%Y%m%d-%H%M%S")
+model_filename = f"MSD-{timestamp}.joblib"
 
 # 下载最新模型文件
 def download_latest_model_from_github():

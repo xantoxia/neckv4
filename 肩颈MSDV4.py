@@ -35,27 +35,33 @@ commit_message = "从Streamlit更新模型文件"  # 提交信息
 timestamp = time.strftime("%Y%m%d_%H%M%S")
 model_filename = f"MSD_{timestamp}.joblib"
 
-
-# 上传文件到 GitHub
-def upload_file_to_github(file_path, github_path, commit_message):
+# 下载最新模型文件
+def download_latest_model_from_github():
     try:
         g = Github(token)
         repo = g.get_repo(repo_name)
+        
+        # 增加延迟
+        time.sleep(1)
 
-        # 读取文件内容
-        with open(file_path, "rb") as f:
-            content = f.read()
-         
-        # 检查文件是否存在
+        # 获取最新模型信息
         try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
+            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
+            latest_model_path = models_folder + latest_info.strip()
+            st.write(f"最新模型路径：{latest_model_path}")
+
+            # 下载最新模型文件
+            file_content = repo.get_contents(latest_model_path)
+            with open("/tmp/latest_model.joblib", "wb") as f:
+                f.write(file_content.decoded_content)
+            st.success("成功下载最新模型！")
+            return latest_model_path
         except:
-            repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
+            st.warning("未找到最新模型信息文件，无法下载模型。")
+            return None
     except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
+        st.error(f"从 GitHub 下载模型失败：{e}")
+        return None
 
 # 保存和上传新模型
 def save_and_upload_new_model(model, model_filename, commit_message):
@@ -85,33 +91,26 @@ def save_and_upload_new_model(model, model_filename, commit_message):
     else:
         st.warning("由于未能下载最新模型，上传新模型和更新信息的操作被取消。")
 
-# 下载最新模型文件
-def download_latest_model_from_github():
+# 上传文件到 GitHub
+def upload_file_to_github(file_path, github_path, commit_message):
     try:
         g = Github(token)
         repo = g.get_repo(repo_name)
-        
-        # 增加延迟
-        time.sleep(1)
 
-        # 获取最新模型信息
+        # 读取文件内容
+        with open(file_path, "rb") as f:
+            content = f.read()
+         
+        # 检查文件是否存在
         try:
-            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-            latest_model_path = models_folder + latest_info.strip()
-            st.write(f"最新模型路径：{latest_model_path}")
-
-            # 下载最新模型文件
-            file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
-                f.write(file_content.decoded_content)
-            st.success("成功下载最新模型！")
-            return latest_model_path
+            file = repo.get_contents(github_path)
+            repo.update_file(github_path, commit_message, content, file.sha)
+            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
         except:
-            st.warning("未找到最新模型信息文件，无法下载模型。")
-            return None
+            repo.create_file(github_path, commit_message, content)
+            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
     except Exception as e:
-        st.error(f"从 GitHub 下载模型失败：{e}")
-        return None
+        st.error(f"上传文件到 GitHub 失败：{e}")
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")

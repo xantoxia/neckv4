@@ -71,7 +71,7 @@ def save_and_upload_new_model(model, model_filename, commit_message):
     time.sleep(1)
     
     # 下载最新模型以确保流程的完整性
-    latest_model_path = download_latest_model_from_github()
+    # latest_model_path = download_latest_model_from_github()
     
     if latest_model_path:
         # 上传新模型到 GitHub

@@ -26,14 +26,14 @@ if not token:
     st.stop()
 
 # GitHub 配置
-repo_name = "xantoxia/neck3"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
 models_folder = "models/"  # GitHub 仓库中模型文件存储路径
 latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
 
 # 定义带时间戳的备份文件名
 timestamp = time.strftime("%Y%m%d_%H%M%S")
-model_filename = f"肩颈分析-模型-{timestamp}.joblib"
+model_filename = f"MSD_{timestamp}.joblib"
 
 
 # 上传文件到 GitHub
@@ -106,9 +106,12 @@ def download_latest_model_from_github():
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path
-        except Exception as e:
-            st.error(f"下载模型失败，出错信息: {e}")
+        except:
+            st.warning("未找到最新模型信息文件，无法下载模型。")
             return None
+    except Exception as e:
+        st.error(f"从 GitHub 下载模型失败：{e}")
+        return None
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")

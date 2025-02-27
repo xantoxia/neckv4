@@ -31,8 +31,8 @@ latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 commit_message = "从Streamlit更新模型文件"  # 提交信息
 
 # 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d%H%M%S")
-model_filename = f"MSD{timestamp}.joblib"
+timestamp = time.strftime("%Y%m%d-%H%M%S")
+model_filename = f"MSD-{timestamp}.joblib"
 
 # 下载最新模型文件
 def download_latest_model_from_github():
@@ -67,12 +67,6 @@ def save_and_upload_new_model(model, model_filename, commit_message):
     dump(model, local_model_path)
     st.write("模型已保存到本地临时路径。")
     
-    # 增加延迟
-    time.sleep(1)
-    
-    # 下载最新模型以确保流程的完整性
-    latest_model_path = download_latest_model_from_github()
-
     if latest_model_path:
         # 上传新模型到 GitHub
         upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
@@ -419,9 +413,7 @@ if uploaded_file is not None:
   
     # 机器学习
     if uploaded_file is not None:
-        # 增加延迟
-        time.sleep(1)
-        
+          
         # 下载最新模型
         model_path = download_latest_model_from_github()
 

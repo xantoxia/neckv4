@@ -39,9 +39,6 @@ def download_latest_model_from_github():
     try:
         g = Github(token)
         repo = g.get_repo(repo_name)
-        
-        # 增加延迟
-        time.sleep(1)
 
         # 获取最新模型信息
         try:
@@ -51,7 +48,7 @@ def download_latest_model_from_github():
 
             # 下载最新模型文件
             file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
+            with open("/tmp/latest_model_path", "wb") as f:
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path

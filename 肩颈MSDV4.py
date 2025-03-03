@@ -3,349 +3,176 @@
 
 import numpy as np
 import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
-import seaborn as sns
 import streamlit as st
-import time
 import os
+import json
+import shap
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report, roc_curve, auc
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import TimeSeriesSplit  # 使用时间序列拆分
+from sklearn.metrics import (classification_report, 
+                             roc_curve, auc, 
+                             confusion_matrix, 
+                             ConfusionMatrixDisplay)
 from joblib import dump, load
-from matplotlib import font_manager
+from datetime import datetime
 from github import Github
 
-# 动态读取Token
-token = os.getenv("GITHUB_TOKEN")
-if not token:
-    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
-    st.stop()
+# ---------------------- 模型管理模块 ----------------------
+class ModelManager:
+    """封装模型训练、评估、保存的完整流程"""
+    
+    def __init__(self, data_version="1.0"):
+        self.data_version = data_version
+        self.best_threshold = 0.5
+        self.feature_names = ['颈部角度(°)', 
+                              '肩部前屈角度(°)', 
+                              '肩部外展角度(°)']
+    
+    def generate_labels(self, df):
+        """基于业务规则生成可靠标签"""
+        # 定义各项阈值
+        neck_threshold = 20         # 颈部角度阈值
+        shoulder_flex_threshold = 45  # 肩部前屈阈值
+        shoulder_abduct_threshold = 30  # 肩部外展阈值
+        
+        # 复合规则生成标签
+        df['Label'] = (
+            (df['颈部角度(°)'] > neck_threshold) |
+            (df['肩部前屈角度(°)'] > shoulder_flex_threshold) |
+            (df['肩部外展角度(°)'] > shoulder_abduct_threshold)
+        ).astype(int)
+        return df
+    
+    def train_model(self, X_train, y_train):
+        """模型训练流程"""
+        model = RandomForestClassifier(
+            n_estimators=200,
+            max_depth=8,
+            class_weight='balanced',
+            random_state=42
+        )
+        model.fit(X_train, y_train)
+        return model
+    
+    def evaluate_model(self, model, X_test, y_test):
+        """综合模型评估"""
+        y_prob = model.predict_proba(X_test)[:, 1]
+        fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+        roc_auc = auc(fpr, tpr)
+        
+        # 自动选择最佳阈值
+        self.best_threshold = thresholds[(tpr - fpr).argmax()]
+        y_pred = (y_prob >= self.best_threshold).astype(int)
+        
+        # 显示评估报告
+        st.subheader("模型评估报告")
+        st.write("#### 分类指标")
+        report = classification_report(y_test, y_pred, output_dict=True)
+        st.dataframe(pd.DataFrame(report).transpose())
+        
+        st.write("#### 混淆矩阵")
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots()
+        ConfusionMatrixDisplay(cm).plot(ax=ax)
+        st.pyplot(fig)
+        
+        st.write("#### ROC曲线")
+        fig, ax = plt.subplots()
+        ax.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
+        ax.plot([0, 1], [0, 1], 'k--')
+        ax.scatter(fpr[(tpr - fpr).argmax()], 
+                   tpr[(tpr - fpr).argmax()], 
+                   c='red', label=f'最佳阈值: {self.best_threshold:.2f}')
+        ax.set_xlabel("假阳性率")
+        ax.set_ylabel("真阳性率")
+        ax.legend()
+        st.pyplot(fig)
+        
+        return roc_auc
+    
+    def save_model(self, model, metrics, train_shape):
+        """带版本控制的模型保存"""
+        meta = {
+            "train_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "data_version": self.data_version,
+            "features": self.feature_names,
+            "train_samples": train_shape[0],
+            "best_threshold": float(self.best_threshold),
+            "metrics": metrics
+        }
+        
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        model_name = f"MSD-Model-{timestamp}"
+        
+        # 将模型保存到临时目录
+        dump(model, f"/tmp/{model_name}.joblib")
+        # 保存元数据
+        with open(f"/tmp/{model_name}.json", "w") as f:
+            json.dump(meta, f)
+        
+        return model_name
 
-# GitHub 配置
-repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
-models_folder = "models/"      # GitHub 仓库中模型文件存储路径
-latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
-commit_message = "从Streamlit更新模型文件"      # 提交信息
-
-# 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d-%H%M%S")
-model_filename = f"MSD-{timestamp}.joblib"
-
-# 上传文件到 GitHub
-def upload_file_to_github(file_path, github_path, commit_message):
-    try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
-        # 读取文件内容
-        with open(file_path, "rb") as f:
-            content = f.read()
-        # 检查文件是否存在
-        try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-        except Exception as ex:
-            repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
-    except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
-
-# 下载最新模型文件
-def download_latest_model_from_github():
-    try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
-        try:
-            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-            latest_model_path = models_folder + latest_info.strip()
-            st.write(f"最新模型路径：{latest_model_path}")
-            file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
-                f.write(file_content.decoded_content)
-            st.success("成功下载最新模型！")
-            return "/tmp/latest_model.joblib"
-        except Exception as ex:
-            st.warning("未找到最新模型信息文件，无法下载模型。")
-            return None
-    except Exception as e:
-        st.error(f"从 GitHub 下载模型失败：{e}")
-        return None
-
-# 设置中文字体
-simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
-plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
-plt.rcParams['axes.unicode_minus'] = False  # 修复负号显示问题
-
-# Streamlit 标题
-st.title("肩颈角度分析与异常检测")
-st.write("结合AI规则与机器学习模型，实现自动检测异常作业姿势并进行可视化分析。")
-
-# 模板下载
-with open("肩颈角度数据模版.csv", "rb") as file:
-    st.download_button(
-        label="下载 CSV 模板",
-        data=file,
-        file_name="template.csv",
-        mime="text/csv"
-    )
-
-# 数据加载与预处理
-uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
-
-if uploaded_file is not None:
-    # 提取文件名并去掉扩展名
-    csv_file_name = os.path.splitext(uploaded_file.name)[0]
-    st.markdown(f"<h3 style='color:blue;'>{csv_file_name} 肩颈作业姿势分析</h3>", unsafe_allow_html=True)
-    # 读取数据
+# ---------------------- 主流程 ----------------------
+def main():
+    st.title("改进版-肩颈姿势分析系统")
+    
+    # 上传数据文件（CSV 格式）
+    uploaded_file = st.file_uploader("上传数据文件", type="csv")
+    if not uploaded_file:
+        st.info("请上传数据文件后继续")
+        return
+    
+    # 数据预处理：读取并重命名列
     data = pd.read_csv(uploaded_file)
-    data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']
-    # 显示数据预览
-    st.write("### 1.1  数据预览")
-    data_reset = data.copy()
-    data_reset.index += 1
-    data_reset.index.name = "序号"
-    st.write(data_reset.head())
-
-    # 按工站汇总统计
-    def summarize_by_station(data):
-        st.write("### 1.2  数据统计分析")
-        station_summary = data.groupby('工站(w)').agg({
-            '时间(s)': ['count'],
-            '颈部角度(°)': ['mean', 'min', 'max', 'std'],
-            '肩部前屈角度(°)': ['mean', 'min', 'max', 'std'],
-            '肩部外展角度(°)': ['mean', 'min', 'max', 'std']
-        })
-        station_summary.columns = ['_'.join(col).strip() for col in station_summary.columns.values]
-        station_summary.reset_index(inplace=True)
-        station_summary = station_summary.round(2)
-        st.write(station_summary)
-    summarize_by_station(data)
-
-    # 数据可视化函数（保持原有可视化展示）
-    def generate_visualizations(data):
-        st.write("## 各工站数据可视化分析")
-        grouped = data.groupby('工站(w)')
-        for station, group_data in grouped:
-            st.write(f"### 工站 {station} 的数据可视化")
-            # 1. 3D 散点图
-            st.write("#### 3D 散点图")
-            fig = plt.figure(figsize=(10, 7))
-            ax = fig.add_subplot(111, projection='3d')
-            scatter = ax.scatter(
-                group_data['时间(s)'], 
-                group_data['颈部角度(°)'], 
-                group_data['肩部前屈角度(°)'], 
-                c=group_data['肩部外展角度(°)'], 
-                cmap='viridis'
-            )
-            ax.set_xlabel('时间(s)', fontproperties=simhei_font)
-            ax.set_ylabel('颈部角度(°)', fontproperties=simhei_font)
-            ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
-            plt.title(f'工站 {station} 肩颈角度3D可视化散点图', fontproperties=simhei_font)
-            cbar = fig.colorbar(scatter, ax=ax)
-            cbar.set_label('肩部外展角度(°)', fontproperties=simhei_font)
-            st.pyplot(fig)
-            
-            # 动态分析结论（3D散点图）
-            st.write(f"**工站 {station} 的动态分析结论（3D散点图）：**")
-            neck_max = group_data['颈部角度(°)'].max()
-            if neck_max < 20:
-                st.write("- 颈部角度均在20°以内，MSD风险较低。")
-            elif 20 <= neck_max <= 40:
-                st.write("- 存在部分时间点颈部角度超过20°，存在一定MSD风险。")
-            else:
-                st.write("- 存在部分时间点颈部角度超过40°，需注意极端低头动作。")
-            
-            shoulder_max = group_data['肩部前屈角度(°)'].max()
-            if shoulder_max < 15:
-                st.write("- 肩部前屈角度波动较小，动作一致。")
-            elif shoulder_max >= 45:
-                st.write("- 部分时间点肩部前屈角度大于45°，需注意作业姿势。")
-            if group_data['肩部外展角度(°)'].mean() > 20:
-                st.write("- 肩部外展角度整体较大，上臂运动强度可能较高。")
-            
-            # 2. 时间变化折线图
-            st.write("#### 肩颈角度时间变化折线图（带预警线）")
-            fig2, ax2 = plt.subplots(figsize=(10, 6))
-            ax2.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)
-            ax2.plot(group_data['时间(s)'], group_data['肩部前屈角度(°)'], label='肩部前屈角度(°)', color='green', linewidth=2)
-            ax2.axhline(y=20, color='red', linestyle='--', linewidth=1.5, label='颈部预警线 (20°)')
-            ax2.axhline(y=45, color='orange', linestyle='--', linewidth=1.5, label='肩部预警线 (45°)')
-            ax2.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
-            ax2.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
-            ax2.set_title(f'工站 {station} 的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
-            ax2.legend(prop=simhei_font, fontsize=10)
-            st.pyplot(fig2)
-            
-            # 动态分析结论（折线图）
-            st.write(f"**工站 {station} 的动态分析结论（折线图）：**")
-            neck_exceed = (group_data['颈部角度(°)'] > 20).sum()
-            ratio_neck = neck_exceed / len(group_data)
-            if neck_exceed > 0:
-                if ratio_neck > 0.5:
-                    st.markdown(f"<span style='color:red;'>- {neck_exceed}个时间点超过20°（{ratio_neck:.2%}），颈部风险较高。</span>", unsafe_allow_html=True)
-                elif ratio_neck >= 0.25:
-                    st.markdown(f"<span style='color:orange;'>- {neck_exceed}个时间点超过20°（{ratio_neck:.2%}），颈部风险中等。</span>", unsafe_allow_html=True)
-                else:
-                    st.write(f"- {neck_exceed}个时间点超过20°，风险轻微。")
-            else:
-                st.write("- 颈部角度均在20°以内，风险较低。")
-            
-            shoulder_exceed = (group_data['肩部前屈角度(°)'] > 45).sum()
-            ratio_shoulder = shoulder_exceed / len(group_data)
-            if shoulder_exceed > 0:
-                if ratio_shoulder > 0.5:
-                    st.markdown(f"<span style='color:red;'>- {shoulder_exceed}个时间点超过45°（{ratio_shoulder:.2%}），肩部风险较高。</span>", unsafe_allow_html=True)
-                elif ratio_shoulder >= 0.25:
-                    st.markdown(f"<span style='color:orange;'>- {shoulder_exceed}个时间点超过45°（{ratio_shoulder:.2%}），肩部风险中等。</span>", unsafe_allow_html=True)
-                else:
-                    st.write(f"- {shoulder_exceed}个时间点超过45°，风险轻微。")
-            else:
-                st.write("- 肩部前屈角度均在45°以内，风险较低。")
-    generate_visualizations(data)
+    data.columns = ['工站(w)', '时间(s)', '颈部角度(°)', 
+                    '肩部前屈角度(°)', '肩部外展角度(°)']
     
-    # 综合分析与AI模型融合检测
-    def comprehensive_analysis_by_workstation(data, model, scaler):
-        st.write("### 3.1  机器学习与规则融合分析结果")
-        grouped = data.groupby('工站(w)')
-        total_abnormal_indices = []
-        
-    # 定义一个辅助函数，利用规则和ML预测融合决策
-    def comprehensive_analysis_by_workstation(data, model, scaler):
-        st.write("### 3.1  机器学习与规则融合分析结果")
-        grouped = data.groupby('工站(w)')
-        total_abnormal_indices = []
-        
-        # 辅助函数：融合规则与ML判断
-        def get_fusion_decision(row):
-            # 规则检测
-            rule_decision = "正常"
-            if row['颈部角度(°)'] > (row['颈部角度(°)_mean'] + row['颈部角度(°)_std']):
-                rule_decision = "异常"
-            elif row['肩部前屈角度(°)'] > (row['肩部前屈角度(°)_mean'] + row['肩部前屈角度(°)_std']):
-                rule_decision = "异常"
-            # ML预测：对单条数据进行标准化转换
-            row_input = np.array([[row['颈部角度(°)'], row['肩部前屈角度(°)'], row['肩部外展角度(°)']]])
-            row_scaled = scaler.transform(row_input)
-            ml_pred = model.predict(row_scaled)[0]
-            ml_decision = "异常" if ml_pred == 1 else "正常"
-            # 融合决策：两者均异常则为“确定异常”，否则只要任一异常即为“疑似异常”
-            if rule_decision == "异常" and ml_decision == "异常":
-                final_decision = "确定异常"
-            elif rule_decision == "异常" or ml_decision == "异常":
-                final_decision = "疑似异常"
-            else:
-                final_decision = "正常"
-            return rule_decision, ml_decision, final_decision
+    # 初始化模型管理器
+    manager = ModelManager(data_version="1.0")
+    # 生成标签
+    data = manager.generate_labels(data)
     
-        # 针对每个工站进行分析
-        for station, group_data in grouped:
-            st.write(f"#### 工站 {station} 的融合检测结果")
-            
-            # 计算动态阈值（转置后索引）
-            group_stats = group_data.agg({
-                '颈部角度(°)': ['mean', 'std'],
-                '肩部前屈角度(°)': ['mean', 'std']
-            }).T  # 转置聚合结果
-            
-            neck_mean = group_stats.loc['颈部角度(°)', 'mean']
-            neck_std  = group_stats.loc['颈部角度(°)', 'std']
-            shoulder_mean = group_stats.loc['肩部前屈角度(°)', 'mean']
-            shoulder_std  = group_stats.loc['肩部前屈角度(°)', 'std']
-            
-            st.write(f"- **动态阈值说明**：若颈部角度 > {neck_mean + neck_std:.2f}° 或肩部前屈角度 > {shoulder_mean + shoulder_std:.2f}°，则视为异常。")
-            
-            abnormal_indices = []
-            # 对每条数据进行融合判断
-            for i, row in group_data.iterrows():
-                rule_decision, ml_decision, fusion_decision = get_fusion_decision(row)
-                st.write(f"- 第 {i+1} 条数据：规则检测：{rule_decision}；ML检测：{ml_decision}；最终融合判断：{fusion_decision}")
-                if fusion_decision != "正常":
-                    abnormal_indices.append(i)
-            if abnormal_indices:
-                st.write(f"##### 工站 {station} 总结：共检测到 {len(abnormal_indices)} 条异常数据。")
-            else:
-                st.write(f"##### 工站 {station} 总结：未检测到异常数据。")
-            total_abnormal_indices.extend(abnormal_indices)
-        return total_abnormal_indices
-
-
-    # ----- 机器学习部分 -----
-    # 提取特征与标签
-    X = data[['颈部角度(°)', '肩部前屈角度(°)', '肩部外展角度(°)']]
-    # 若数据中未提供标签，使用基于规则的初步标注（请确保后续使用专业标注数据）
-    if 'Label' not in data.columns:
-        st.warning("数据中未提供标注，采用规则生成初步标签，请尽快引入专业标注数据。")
-        data['Label'] = ((data['颈部角度(°)'] > 20) | (data['肩部前屈角度(°)'] > 45)).astype(int)
+    # 时间序列拆分
+    tscv = TimeSeriesSplit(n_splits=5)
+    X = data[manager.feature_names]
     y = data['Label']
+    
+    # 交叉验证训练与评估
+    all_metrics = []
+    for fold, (train_idx, test_idx) in enumerate(tscv.split(X)):
+        st.subheader(f"交叉验证 Fold {fold+1}")
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+        
+        # 模型训练
+        model = manager.train_model(X_train, y_train)
+        # 模型评估
+        roc_auc = manager.evaluate_model(model, X_test, y_test)
+        all_metrics.append(roc_auc)
+        
+        # SHAP特征解释
+        st.write("#### SHAP特征重要性")
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_test)
+        fig, ax = plt.subplots()
+        shap.summary_plot(shap_values, X_test, plot_type="bar", show=False)
+        st.pyplot(fig)
+    
+    # 根据交叉验证结果决定是否保存最终模型
+    mean_auc = np.mean(all_metrics)
+    st.write(f"交叉验证 AUC 均值：{mean_auc:.2f}")
+    if mean_auc > 0.7:  # 性能阈值
+        final_model = manager.train_model(X, y)
+        model_name = manager.save_model(final_model, {"mean_auc": mean_auc}, X.shape)
+        st.success(f"模型 {model_name} 已通过验证并保存")
+    else:
+        st.warning("模型性能未达标准，请检查数据质量")
 
-    # 数据标准化
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    
-    # 划分训练集与测试集
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
+# ---------------------- GitHub操作模块 ----------------------
+def github_ops():
+    """改进后的GitHub操作：可在此处实现模型及元数据的上传逻辑"""
+    pass
 
-    # 优化：使用 GridSearchCV 进行超参数调优
-    param_grid = {
-        'n_estimators': [50, 100, 200],
-        'max_depth': [None, 5, 10],
-        'min_samples_split': [2, 5, 10]
-    }
-    grid_search = GridSearchCV(RandomForestClassifier(random_state=42),
-                               param_grid, cv=5, scoring='roc_auc')
-    grid_search.fit(X_train, y_train)
-    best_model = grid_search.best_estimator_
-    st.write("最佳超参数：", grid_search.best_params_)
-
-    # 采用最佳模型进行训练与预测
-    model = best_model
-    model.fit(X_train, y_train)
-    y_prob = model.predict_proba(X_test)[:, 1]
-    
-    # 评估：绘制ROC曲线并选择最佳阈值
-    fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-    roc_auc = auc(fpr, tpr)
-    best_index = (tpr - fpr).argmax()
-    best_threshold = thresholds[best_index]
-
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
-    ax.plot([0, 1], [0, 1], 'r--', label="随机模型")
-    ax.scatter(fpr[best_index], tpr[best_index], color='red', label=f'最佳阈值: {best_threshold:.2f}')
-    ax.annotate(f'({fpr[best_index]:.2f}, {tpr[best_index]:.2f})',
-                xy=(fpr[best_index], tpr[best_index]),
-                xytext=(fpr[best_index]-0.2, tpr[best_index]-0.1),
-                arrowprops=dict(facecolor='red', arrowstyle='->'),
-                fontsize=10,
-                fontproperties=simhei_font)
-    ax.set_xlabel('假阳性率', fontproperties=simhei_font)
-    ax.set_ylabel('真阳性率', fontproperties=simhei_font)
-    ax.set_title('ROC曲线', fontproperties=simhei_font)
-    ax.legend(loc='lower right', prop=simhei_font)
-    st.pyplot(fig)
-    
-    st.write("### 3.4  AI模型质量评估")
-    st.write(f"模型AUC为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}。")
-    
-    # 调用融合分析函数，对每个工站进行逐条数据检测
-    total_abnormal_indices = comprehensive_analysis_by_workstation(data, model, scaler)
-    
-    # 保存新模型到本地临时路径，并上传到 GitHub
-    local_model_path = f"/tmp/{model_filename}"
-    dump(model, local_model_path)
-    st.write("模型已训练并保存到本地临时路径。")
-    upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
-    st.write("模型已保存并上传到 GitHub。")
-    
-    # 更新最新模型信息
-    latest_info_path = "/tmp/" + latest_model_file
-    with open(latest_info_path, "w") as f:
-        f.write(model_filename)
-    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
-    st.success("新模型已上传，并更新最新模型记录。")
-    
-    st.write("#### 页面导出提示")
-    st.info("如需将页面导出为 HTML 文件，请在浏览器中按 Ctrl+S 保存。")
+if __name__ == "__main__":
+    main()

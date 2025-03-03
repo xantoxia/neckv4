@@ -212,7 +212,13 @@ if uploaded_file is not None:
         grouped = data.groupby('工站(w)')
         total_abnormal_indices = []
         
-        # 定义一个辅助函数，利用规则和ML预测融合决策
+    # 定义一个辅助函数，利用规则和ML预测融合决策
+    def comprehensive_analysis_by_workstation(data, model, scaler):
+        st.write("### 3.1  机器学习与规则融合分析结果")
+        grouped = data.groupby('工站(w)')
+        total_abnormal_indices = []
+        
+        # 辅助函数：融合规则与ML判断
         def get_fusion_decision(row):
             # 规则检测
             rule_decision = "正常"
@@ -220,12 +226,12 @@ if uploaded_file is not None:
                 rule_decision = "异常"
             elif row['肩部前屈角度(°)'] > (row['肩部前屈角度(°)_mean'] + row['肩部前屈角度(°)_std']):
                 rule_decision = "异常"
-            # ML预测：注意对单条数据进行标准化转换
+            # ML预测：对单条数据进行标准化转换
             row_input = np.array([[row['颈部角度(°)'], row['肩部前屈角度(°)'], row['肩部外展角度(°)']]])
             row_scaled = scaler.transform(row_input)
             ml_pred = model.predict(row_scaled)[0]
             ml_decision = "异常" if ml_pred == 1 else "正常"
-            # 融合决策：若两者均异常，则为“确定异常”；任一异常则为“疑似异常”
+            # 融合决策：两者均异常则为“确定异常”，否则只要任一异常即为“疑似异常”
             if rule_decision == "异常" and ml_decision == "异常":
                 final_decision = "确定异常"
             elif rule_decision == "异常" or ml_decision == "异常":
@@ -233,30 +239,26 @@ if uploaded_file is not None:
             else:
                 final_decision = "正常"
             return rule_decision, ml_decision, final_decision
-
+    
         # 针对每个工站进行分析
         for station, group_data in grouped:
             st.write(f"#### 工站 {station} 的融合检测结果")
-            # 动态阈值计算
+            
+            # 计算动态阈值（转置后索引）
             group_stats = group_data.agg({
                 '颈部角度(°)': ['mean', 'std'],
                 '肩部前屈角度(°)': ['mean', 'std']
-            })
-            neck_mean = group_stats.loc[:, ('颈部角度(°)', 'mean')]
-            neck_std  = group_stats.loc[:, ('颈部角度(°)', 'std')]
-            shoulder_mean = group_stats.loc[:, ('肩部前屈角度(°)', 'mean')]
-            shoulder_std  = group_stats.loc[:, ('肩部前屈角度(°)', 'std')]
-            # 将统计结果赋值到数据中，方便规则判断
-            group_data = group_data.copy()
-            group_data['颈部角度(°)_mean'] = neck_mean.values[0]
-            group_data['颈部角度(°)_std'] = neck_std.values[0]
-            group_data['肩部前屈角度(°)_mean'] = shoulder_mean.values[0]
-            group_data['肩部前屈角度(°)_std'] = shoulder_std.values[0]
+            }).T  # 转置聚合结果
             
-            st.write(f"- **动态阈值说明**：若颈部角度 > {neck_mean.values[0] + neck_std.values[0]:.2f}° 或肩部前屈角度 > {shoulder_mean.values[0] + shoulder_std.values[0]:.2f}°，则视为异常。")
+            neck_mean = group_stats.loc['颈部角度(°)', 'mean']
+            neck_std  = group_stats.loc['颈部角度(°)', 'std']
+            shoulder_mean = group_stats.loc['肩部前屈角度(°)', 'mean']
+            shoulder_std  = group_stats.loc['肩部前屈角度(°)', 'std']
+            
+            st.write(f"- **动态阈值说明**：若颈部角度 > {neck_mean + neck_std:.2f}° 或肩部前屈角度 > {shoulder_mean + shoulder_std:.2f}°，则视为异常。")
             
             abnormal_indices = []
-            # 对每条数据融合判断
+            # 对每条数据进行融合判断
             for i, row in group_data.iterrows():
                 rule_decision, ml_decision, fusion_decision = get_fusion_decision(row)
                 st.write(f"- 第 {i+1} 条数据：规则检测：{rule_decision}；ML检测：{ml_decision}；最终融合判断：{fusion_decision}")
@@ -268,6 +270,7 @@ if uploaded_file is not None:
                 st.write(f"##### 工站 {station} 总结：未检测到异常数据。")
             total_abnormal_indices.extend(abnormal_indices)
         return total_abnormal_indices
+
 
     # ----- 机器学习部分 -----
     # 提取特征与标签

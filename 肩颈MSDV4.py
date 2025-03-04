@@ -25,7 +25,7 @@ if not token:
     st.stop()
 
 # GitHub 配置
-REPO_NAME = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
 MODELS_DIR = "models/"  # GitHub 仓库中模型文件存储路径
 DATA_DIR = "data/"     # GitHub 仓库中数据文件存储路径
 COMMIT_MSG_MODEL = "从Streamlit更新模型文件"  # 模型文件提交信息
@@ -415,7 +415,7 @@ if uploaded_file is not None:
   
     # 机器学习
     if uploaded_file is not None:
-          
+         
         # 下载最新模型
         model_path = download_latest_model_from_github()
 

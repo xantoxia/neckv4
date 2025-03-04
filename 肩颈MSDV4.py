@@ -80,9 +80,8 @@ def download_latest_model_from_github():
         st.error(f"从 GitHub 下载模型失败：{e}")
         return None
         
-    # MSD提交数据记录
-    def save_and_upload_data(uploaded_file):
-    """保存并上传数据到GitHub"""
+# MSD提交数据记录  """保存并上传数据到GitHub"""
+def save_and_upload_data(uploaded_file):
     try:
         # 创建带时间戳的文件名
         timestamp = time.strftime("%Y%m%d-%H%M%S")

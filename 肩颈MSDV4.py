@@ -41,7 +41,7 @@ def upload_model_to_github(file_path, github_path):
    # """模型文件专用上传函数（保留原有逻辑）"""
     try:
         g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(REPO_NAME)
+        repo = g.get_repo(repo_name)
         
         with open(file_path, "rb") as f:
             content = f.read()
@@ -125,6 +125,7 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 
 if uploaded_file is not None:
     upload_csv_to_github(uploaded_file)
+    model_path = download_latest_model_from_github()
     
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
@@ -414,11 +415,6 @@ if uploaded_file is not None:
         return total_abnormal_indices
   
     # 机器学习
-    if uploaded_file is not None:
-        download_latest_model_from_github()
-        # 下载最新模型
-        model_path = download_latest_model_from_github()
-
     if model_path:
         model = load(model_path)
         st.write("加载最新模型进行分析...")

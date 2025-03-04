@@ -1,28 +1,97 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
 import numpy as np
 import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sns
 import streamlit as st
 import time
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, roc_curve, auc
-from joblib import dump, load
-from matplotlib import font_manager
 from github import Github
 
-# 动态读取Token
-token = os.getenv("GITHUB_TOKEN")
-if not token:
-    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
+# 环境配置校验
+if not os.getenv("GITHUB_TOKEN"):
+    st.error("GitHub Token未配置，请在Secrets中设置GITHUB_TOKEN")
     st.stop()
+
+# GitHub仓库配置
+REPO_NAME = "xantoxia/neckv4"
+MODELS_DIR = "models/"
+DATA_DIR = "data/"
+COMMIT_MSG_MODEL = "模型文件更新"
+COMMIT_MSG_DATA = "用户数据上传"
+
+# ========== GitHub操作函数 ==========
+def upload_model_to_github(file_path, github_path):
+    """模型文件专用上传函数（保留原有逻辑）"""
+    try:
+        g = Github(os.getenv("GITHUB_TOKEN"))
+        repo = g.get_repo(REPO_NAME)
+        
+        with open(file_path, "rb") as f:
+            content = f.read()
+            
+        # 检查文件是否存在
+        try:
+            file = repo.get_contents(github_path)
+            repo.update_file(github_path, COMMIT_MSG_MODEL, content, file.sha)
+        except:
+            repo.create_file(github_path, COMMIT_MSG_MODEL, content)
+            
+        st.success(f"模型 {github_path} 上传成功")
+        return True
+    except Exception as e:
+        st.error(f"模型上传失败: {str(e)}")
+        return False
+
+def upload_csv_to_github(uploaded_file):
+    """CSV数据专用上传函数（新增功能）"""
+    try:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        github_path = f"{DATA_DIR}{timestamp}_{uploaded_file.name}"
+        content = uploaded_file.getvalue()  # 直接获取字节流‌:ml-citation{ref="1,2" data="citationList"}
+        
+        g = Github(os.getenv("GITHUB_TOKEN"))
+        repo = g.get_repo(REPO_NAME)
+        repo.create_file(github_path, COMMIT_MSG_DATA, content)
+        
+        st.success(f"CSV文件已存档至 {github_path}")
+        return True
+    except Exception as e:
+        st.error(f"CSV上传失败: {str(e)}")
+        return False
+
+# ========== 数据处理函数 ==========
+def process_uploaded_data(uploaded_file):
+    """CSV数据处理流程"""
+    try:
+        df = pd.read_csv(uploaded_file)
+        # 添加数据处理逻辑...
+        return df
+    except Exception as e:
+        st.error(f"数据处理错误: {str(e)}")
+        return None
+
+# ========== 主界面 ==========
+def main():
+    st.title("数据分析与模型管理平台")
+    
+    # 侧边栏模块
+    with st.sidebar:
+        st.header("文件上传")
+        uploaded_file = st.file_uploader("上传CSV文件", type=["csv"])
+        
+        if uploaded_file:
+            if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
+                process_uploaded_data(uploaded_file)
+        
+        # 模型训练模块
+        if st.button("训练新模型"):
+            timestamp = time.strftime("%Y%m%d-%H%M%S")
+            model_path = f"/tmp/MSD-{timestamp}.joblib"
+            # 添加模型训练逻辑...
+            upload_model_to_github(model_path, f"{MODELS_DIR}MSD-{timestamp}.joblib")
+
+if __name__ == "__main__":
+    main()
 
 # GitHub 配置
 repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库

@@ -102,17 +102,6 @@ def upload_csv_to_github(uploaded_file):
         st.error(f"CSV上传失败: {str(e)}")
         return False
 
-# ========== 数据处理函数 ==========
-def process_uploaded_data(uploaded_file):
-    """CSV数据处理流程"""
-    try:
-        df = pd.read_csv(uploaded_file)
-        # 添加数据处理逻辑...
-        return df
-    except Exception as e:
-        st.error(f"数据处理错误: {str(e)}")
-        return None
-
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
 plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
@@ -133,12 +122,6 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
-
-# 保存上传的数据
-if uploaded_file:
-    # 新增数据上传功能
-    if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
-        process_uploaded_data(uploaded_file)
             
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

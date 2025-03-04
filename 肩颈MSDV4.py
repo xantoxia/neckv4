@@ -102,6 +102,17 @@ def upload_csv_to_github(uploaded_file):
         st.error(f"CSV上传失败: {str(e)}")
         return False
 
+# ========== 数据处理函数 ==========
+def process_uploaded_data(uploaded_file):
+    """CSV数据处理流程"""
+    try:
+        df = pd.read_csv(uploaded_file)
+        # 添加数据处理逻辑...
+        return df
+    except Exception as e:
+        st.error(f"数据处理错误: {str(e)}")
+        return None
+
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
 plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体

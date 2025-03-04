@@ -38,7 +38,7 @@ model_filename = f"MSD-{timestamp}.joblib"
 
 # 上传模型文件到 GitHub
 def upload_model_to_github(file_path, github_path):
-    """模型文件专用上传函数（保留原有逻辑）"""
+   # """模型文件专用上传函数（保留原有逻辑）"""
     try:
         g = Github(os.getenv("GITHUB_TOKEN"))
         repo = g.get_repo(REPO_NAME)
@@ -125,7 +125,7 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 
 if uploaded_file:
     if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
-        process_uploaded_data(uploaded_file)
+         st.success(f"CSV文件已存档至 {github_path}")
 
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

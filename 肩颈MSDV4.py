@@ -34,26 +34,22 @@ commit_message = "从Streamlit更新模型文件"  # 提交信息
 timestamp = time.strftime("%Y%m%d-%H%M%S")
 model_filename = f"MSD-{timestamp}.joblib"
 
-# 上传文件到 GitHub
-def upload_file_to_github(file_path, github_path, commit_message):
+# 修改原有上传函数（新增content参数）
+def upload_file_to_github(github_path, commit_message, file_path=None, content=None):
+    """支持文件路径和字节流两种上传方式"""
     try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
-
-        # 读取文件内容
-        with open(file_path, "rb") as f:
-            content = f.read()
-
-        # 检查文件是否存在
-        try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-        except:
+        g = Github(st.secrets["GITHUB_TOKEN"])
+        repo = g.get_repo("your_repo_path")
+        
+        if content:  # 直接上传字节流内容‌:ml-citation{ref="1" data="citationList"}
             repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
+        elif file_path:  # 兼容原有文件路径上传‌:ml-citation{ref="3" data="citationList"}
+            with open(file_path, "rb") as f:
+                repo.create_file(github_path, commit_message, f.read())
+        return True
     except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
+        st.error(f"上传失败: {str(e)}")
+        return False
 
 # 下载最新模型文件
 def download_latest_model_from_github():
@@ -123,27 +119,14 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
-# 保存上传的数据
+# 修改调用方式（移除file_path参数）
 if uploaded_file:
-    # 新增自动上传逻辑
-    try:
-        # 生成唯一文件名
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        github_path = f"data/upload_{timestamp}.csv"
-        
-        # 将文件对象转为字节流
-        file_content = uploaded_file.getvalue()
-        
-        # 调用已有上传函数
-        upload_file_to_github(
-            file_path=None,  # 使用字节流直接上传
-            github_path=github_path,
-            commit_message="Auto-upload user data",
-            content=file_content  # 新增content参数
-        )
-        st.sidebar.success("数据已自动存档至GitHub")
-    except Exception as e:
-        st.sidebar.error(f"自动上传失败: {str(e)}")
+    file_content = uploaded_file.getvalue()  # 通过Streamlit直接获取字节流‌:ml-citation{ref="4" data="citationList"}
+    upload_file_to_github(
+        github_path=f"data/{uploaded_file.name}",
+        commit_message="Auto-save user data",
+        content=file_content  # 仅传递内容参数‌:ml-citation{ref="2" data="citationList"}
+    )
             
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

@@ -124,7 +124,7 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
 if uploaded_file:
-upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
+upload_csv_to_github(uploaded_file)
 
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名
@@ -500,7 +500,7 @@ if uploaded_file is not None:
     latest_info_path = "/tmp/" + latest_model_file
     with open(latest_info_path, "w") as f:
         f.write(model_filename)
-    upload_file_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+    upload_model_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
 
     st.write("#### 页面导出")

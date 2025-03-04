@@ -34,22 +34,26 @@ commit_message = "从Streamlit更新模型文件"  # 提交信息
 timestamp = time.strftime("%Y%m%d-%H%M%S")
 model_filename = f"MSD-{timestamp}.joblib"
 
-# 修改原有上传函数（新增content参数）
-def upload_file_to_github(github_path, commit_message, file_path=None, content=None):
-    """支持文件路径和字节流两种上传方式"""
+# 上传文件到 GitHub
+def upload_file_to_github(file_path, github_path, commit_message):
     try:
-        g = Github(st.secrets["GITHUB_TOKEN"])
-        repo = g.get_repo("your_repo_path")
-        
-        if content:  # 直接上传字节流内容‌:ml-citation{ref="1" data="citationList"}
+        g = Github(token)
+        repo = g.get_repo(repo_name)
+
+        # 读取文件内容
+        with open(file_path, "rb") as f:
+            content = f.read()
+
+        # 检查文件是否存在
+        try:
+            file = repo.get_contents(github_path)
+            repo.update_file(github_path, commit_message, content, file.sha)
+            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
+        except:
             repo.create_file(github_path, commit_message, content)
-        elif file_path:  # 兼容原有文件路径上传‌:ml-citation{ref="3" data="citationList"}
-            with open(file_path, "rb") as f:
-                repo.create_file(github_path, commit_message, f.read())
-        return True
+            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
     except Exception as e:
-        st.error(f"上传失败: {str(e)}")
-        return False
+        st.error(f"上传文件到 GitHub 失败：{e}")
 
 # 下载最新模型文件
 def download_latest_model_from_github():
@@ -119,14 +123,12 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
-# 修改调用方式（移除file_path参数）
+# 保存上传的数据
 if uploaded_file:
-    file_content = uploaded_file.getvalue()  # 通过Streamlit直接获取字节流‌:ml-citation{ref="4" data="citationList"}
-    upload_file_to_github(
-        github_path=f"data/{uploaded_file.name}",
-        commit_message="Auto-save user data",
-        content=file_content  # 仅传递内容参数‌:ml-citation{ref="2" data="citationList"}
-    )
+    # 新增数据上传功能
+    if st.sidebar.button("📤 保存数据到GitHub"):
+        if save_and_upload_data(uploaded_file):
+            st.sidebar.success(f"数据已存档至GitHub仓库的data目录")
             
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

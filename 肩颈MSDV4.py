@@ -79,6 +79,29 @@ def download_latest_model_from_github():
     except Exception as e:
         st.error(f"从 GitHub 下载模型失败：{e}")
         return None
+        
+    # MSD提交数据记录
+    def save_and_upload_data(uploaded_file):
+    """保存并上传数据到GitHub"""
+    try:
+        # 创建带时间戳的文件名
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        github_path = f"data/uploaded_data_{timestamp}.csv"
+        
+        # 将上传文件暂存到临时目录
+        with open(f"/tmp/{uploaded_file.name}", "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        # 调用已有上传函数
+        upload_file_to_github(
+            f"/tmp/{uploaded_file.name}",
+            github_path,
+            "Auto-uploaded user data"
+        )
+        return True
+    except Exception as e:
+        st.error(f"数据上传失败: {str(e)}")
+        return False
 
 # 设置中文字体
 simhei_font = font_manager.FontProperties(fname="SimHei.ttf")
@@ -101,6 +124,13 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
+# 保存上传的数据
+if uploaded_file:
+    # 新增数据上传功能
+    if st.sidebar.button("📤 保存数据到GitHub"):
+        if save_and_upload_data(uploaded_file):
+            st.sidebar.success(f"数据已存档至GitHub仓库的data目录")
+            
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]

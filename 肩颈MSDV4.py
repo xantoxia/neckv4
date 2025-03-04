@@ -1,25 +1,42 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
 import numpy as np
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 import streamlit as st
 import time
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, roc_curve, auc
+from joblib import dump, load
+from matplotlib import font_manager
 from github import Github
 
-# 环境配置校验
-if not os.getenv("GITHUB_TOKEN"):
-    st.error("GitHub Token未配置，请在Secrets中设置GITHUB_TOKEN")
+# 动态读取Token
+token = os.getenv("GITHUB_TOKEN")
+if not token:
+    st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
     st.stop()
 
-# GitHub仓库配置
-REPO_NAME = "xantoxia/neckv4"
-MODELS_DIR = "models/"
-DATA_DIR = "data/"
-COMMIT_MSG_MODEL = "模型文件更新"
-COMMIT_MSG_DATA = "用户数据上传"
+# GitHub 配置
+REPO_NAME = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
+MODELS_DIR = "models/"  # GitHub 仓库中模型文件存储路径
+DATA_DIR = "data/"     # GitHub 仓库中数据文件存储路径
+COMMIT_MSG_MODEL = "从Streamlit更新模型文件"  # 模型文件提交信息
+COMMIT_MSG_DATA = "用户数据上传"  # 数据文件提交信息
+latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 
-# ========== GitHub操作函数 ==========
+# 定义带时间戳的备份文件名
+timestamp = time.strftime("%Y%m%d-%H%M%S")
+model_filename = f"MSD-{timestamp}.joblib"
+
+# 上传模型文件到 GitHub
 def upload_model_to_github(file_path, github_path):
     """模型文件专用上传函数（保留原有逻辑）"""
     try:
@@ -41,88 +58,6 @@ def upload_model_to_github(file_path, github_path):
     except Exception as e:
         st.error(f"模型上传失败: {str(e)}")
         return False
-
-def upload_csv_to_github(uploaded_file):
-    """CSV数据专用上传函数（新增功能）"""
-    try:
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        github_path = f"{DATA_DIR}{timestamp}_{uploaded_file.name}"
-        content = uploaded_file.getvalue()  # 直接获取字节流‌:ml-citation{ref="1,2" data="citationList"}
-        
-        g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(REPO_NAME)
-        repo.create_file(github_path, COMMIT_MSG_DATA, content)
-        
-        st.success(f"CSV文件已存档至 {github_path}")
-        return True
-    except Exception as e:
-        st.error(f"CSV上传失败: {str(e)}")
-        return False
-
-# ========== 数据处理函数 ==========
-def process_uploaded_data(uploaded_file):
-    """CSV数据处理流程"""
-    try:
-        df = pd.read_csv(uploaded_file)
-        # 添加数据处理逻辑...
-        return df
-    except Exception as e:
-        st.error(f"数据处理错误: {str(e)}")
-        return None
-
-# ========== 主界面 ==========
-def main():
-    st.title("数据分析与模型管理平台")
-    
-    # 侧边栏模块
-    with st.sidebar:
-        st.header("文件上传")
-        uploaded_file = st.file_uploader("上传CSV文件", type=["csv"])
-        
-        if uploaded_file:
-            if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
-                process_uploaded_data(uploaded_file)
-        
-        # 模型训练模块
-        if st.button("训练新模型"):
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
-            model_path = f"/tmp/MSD-{timestamp}.joblib"
-            # 添加模型训练逻辑...
-            upload_model_to_github(model_path, f"{MODELS_DIR}MSD-{timestamp}.joblib")
-
-if __name__ == "__main__":
-    main()
-
-# GitHub 配置
-repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
-models_folder = "models/"  # GitHub 仓库中模型文件存储路径
-latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
-commit_message = "从Streamlit更新模型文件"  # 提交信息
-
-# 定义带时间戳的备份文件名
-timestamp = time.strftime("%Y%m%d-%H%M%S")
-model_filename = f"MSD-{timestamp}.joblib"
-
-# 上传文件到 GitHub
-def upload_file_to_github(file_path, github_path, commit_message):
-    try:
-        g = Github(token)
-        repo = g.get_repo(repo_name)
-
-        # 读取文件内容
-        with open(file_path, "rb") as f:
-            content = f.read()
-
-        # 检查文件是否存在
-        try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, commit_message, content, file.sha)
-            st.success(f"文件已成功更新到 GitHub 仓库：{github_path}")
-        except:
-            repo.create_file(github_path, commit_message, content)
-            st.success(f"文件已成功上传到 GitHub 仓库：{github_path}")
-    except Exception as e:
-        st.error(f"上传文件到 GitHub 失败：{e}")
 
 # 下载最新模型文件
 def download_latest_model_from_github():
@@ -150,25 +85,21 @@ def download_latest_model_from_github():
         return None
         
 # MSD提交数据记录  """保存并上传数据到GitHub"""
-def save_and_upload_data(uploaded_file):
+def upload_csv_to_github(uploaded_file):
+   # """CSV数据专用上传函数（新增功能）"""
     try:
-        # 创建带时间戳的文件名
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        github_path = f"data/uploaded_data_{timestamp}.csv"
+        github_path = f"{DATA_DIR}{timestamp}_{uploaded_file.name}"
+        content = uploaded_file.getvalue()  # 直接获取字节流‌:ml-citation{ref="1,2" data="citationList"}
         
-        # 将上传文件暂存到临时目录
-        with open(f"/tmp/{uploaded_file.name}", "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        g = Github(os.getenv("GITHUB_TOKEN"))
+        repo = g.get_repo(REPO_NAME)
+        repo.create_file(github_path, COMMIT_MSG_DATA, content)
         
-        # 调用已有上传函数
-        upload_file_to_github(
-            f"/tmp/{uploaded_file.name}",
-            github_path,
-            "Auto-uploaded user data"
-        )
+        st.success(f"CSV文件已存档至 {github_path}")
         return True
     except Exception as e:
-        st.error(f"数据上传失败: {str(e)}")
+        st.error(f"CSV上传失败: {str(e)}")
         return False
 
 # 设置中文字体
@@ -195,9 +126,8 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 # 保存上传的数据
 if uploaded_file:
     # 新增数据上传功能
-    if st.sidebar.button("📤 保存数据到GitHub"):
-        if save_and_upload_data(uploaded_file):
-            st.sidebar.success(f"数据已存档至GitHub仓库的data目录")
+    if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
+        process_uploaded_data(uploaded_file)
             
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名
@@ -566,7 +496,7 @@ if uploaded_file is not None:
     st.write("模型已训练并保存到本地临时路径。")
 
     # 上传新模型到 GitHub
-    upload_file_to_github(local_model_path, models_folder + model_filename, commit_message)
+    upload_model_to_github(model_path, f"{MODELS_DIR}MSD-{timestamp}.joblib")
     st.write("模型已保存并上传到 GitHub。")
     
     # 更新最新模型信息

@@ -125,10 +125,25 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 
 # 保存上传的数据
 if uploaded_file:
-    # 新增数据上传功能
-    if st.sidebar.button("📤 保存数据到GitHub"):
-        if save_and_upload_data(uploaded_file):
-            st.sidebar.success(f"数据已存档至GitHub仓库的data目录")
+    # 新增自动上传逻辑
+    try:
+        # 生成唯一文件名
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        github_path = f"data/upload_{timestamp}.csv"
+        
+        # 将文件对象转为字节流
+        file_content = uploaded_file.getvalue()
+        
+        # 调用已有上传函数
+        upload_file_to_github(
+            file_path=None,  # 使用字节流直接上传
+            github_path=github_path,
+            commit_message="Auto-upload user data",
+            content=file_content  # 新增content参数
+        )
+        st.sidebar.success("数据已自动存档至GitHub")
+    except Exception as e:
+        st.sidebar.error(f"自动上传失败: {str(e)}")
             
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

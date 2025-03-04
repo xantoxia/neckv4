@@ -125,7 +125,6 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 
 if uploaded_file:
     if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
-         st.success(f"CSV文件已存档至 {github_path}")
 
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名

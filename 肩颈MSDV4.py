@@ -122,7 +122,11 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
-            
+
+if uploaded_file:
+    if upload_csv_to_github(uploaded_file):  # 自动触发上传‌:ml-citation{ref="1,4" data="citationList"}
+        process_uploaded_data(uploaded_file)
+
 if uploaded_file is not None:
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]

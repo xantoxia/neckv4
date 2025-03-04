@@ -123,10 +123,9 @@ with open("肩颈角度数据模版.csv", "rb") as file:
 # 数据加载与预处理
 uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", type="csv")
 
-if uploaded_file:
-upload_csv_to_github(uploaded_file)
-
 if uploaded_file is not None:
+    upload_csv_to_github(uploaded_file)
+    
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
      # 使用 HTML 格式设置字体颜色为蓝色

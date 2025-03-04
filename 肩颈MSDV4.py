@@ -93,7 +93,7 @@ def upload_csv_to_github(uploaded_file):
         content = uploaded_file.getvalue()  # 直接获取字节流‌:ml-citation{ref="1,2" data="citationList"}
         
         g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(REPO_NAME)
+        repo = g.get_repo(repo_name)
         repo.create_file(github_path, COMMIT_MSG_DATA, content)
         
         st.success(f"CSV文件已存档至 {github_path}")
@@ -415,7 +415,7 @@ if uploaded_file is not None:
   
     # 机器学习
     if uploaded_file is not None:
-         
+        download_latest_model_from_github()
         # 下载最新模型
         model_path = download_latest_model_from_github()
 

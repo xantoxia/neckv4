@@ -73,7 +73,7 @@ def download_latest_model_from_github():
 
             # 下载最新模型文件
             file_content = repo.get_contents(latest_model_path)
-            with open(latest_model_path, "wb") as f:
+            with open(latest_model_path, "w") as f:
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path

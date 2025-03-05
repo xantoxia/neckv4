@@ -68,7 +68,7 @@ def download_latest_model_from_github():
         # 获取最新模型信息
         try:
             latest_info = repo.get_contents(MODELS_DIR + latest_model_file).decoded_content.decode()
-            latest_model_path = MODELS_DIR + latest_info.strip()
+            latest_model_path = f"MODELS_DIR + latest_info.strip()"
             st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件

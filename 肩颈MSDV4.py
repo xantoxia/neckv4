@@ -73,7 +73,7 @@ def download_latest_model_from_github():
 
             # 下载最新模型文件
             file_content = repo.get_contents(latest_model_path)
-            with open(latest_model_path, "w") as f:
+            with open(latest_model_path, "wb") as f:
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
             return latest_model_path
@@ -125,7 +125,6 @@ uploaded_file = st.file_uploader("上传肩颈角度数据文件 (CSV 格式)", 
 
 if uploaded_file is not None:
     upload_csv_to_github(uploaded_file)
-    model_path = download_latest_model_from_github()
     
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
@@ -415,6 +414,9 @@ if uploaded_file is not None:
         return total_abnormal_indices
   
     # 机器学习
+    if uploaded_file is not None:
+        model_path = download_latest_model_from_github()
+    
     if model_path:
         model = load(model_path)
         st.write("加载最新模型进行分析...")

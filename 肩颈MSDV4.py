@@ -37,7 +37,7 @@ timestamp = time.strftime("%Y%m%d-%H%M%S")
 model_filename = f"MSD-{timestamp}.joblib"
 
 # 上传模型文件到 GitHub
-def upload_model_to_github(file_path, github_path):
+def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):
    # """模型文件专用上传函数（保留原有逻辑）"""
     try:
         g = Github(os.getenv("GITHUB_TOKEN"))
@@ -67,8 +67,8 @@ def download_latest_model_from_github():
 
         # 获取最新模型信息
         try:
-            latest_info = repo.get_contents(models_folder + latest_model_file).decoded_content.decode()
-            latest_model_path = models_folder + latest_info.strip()
+            latest_info = repo.get_contents(MODELS_DIR + latest_model_file).decoded_content.decode()
+            latest_model_path = MODELS_DIR + latest_info.strip()
             st.write(f"最新模型路径：{latest_model_path}")
 
             # 下载最新模型文件
@@ -495,7 +495,7 @@ if uploaded_file is not None:
     latest_info_path = "/tmp/" + latest_model_file
     with open(latest_info_path, "w") as f:
         f.write(model_filename)
-    upload_model_to_github(latest_info_path, models_folder + latest_model_file, "更新最新模型信息")
+    upload_model_to_github(latest_info_path, MODELS_DIR + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
 
     st.write("#### 页面导出")

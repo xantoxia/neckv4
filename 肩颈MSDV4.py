@@ -73,10 +73,10 @@ def download_latest_model_from_github():
 
             # 下载最新模型文件
             file_content = repo.get_contents(latest_model_path)
-            with open("/tmp/latest_model.joblib", "wb") as f:
+            with open(latest_model_path, "wb") as f:
                 f.write(file_content.decoded_content)
             st.success("成功下载最新模型！")
-            return "/tmp/latest_model.joblib"
+            return latest_model_path
         except:
             st.warning("未找到最新模型信息文件，无法下载模型。")
             return None

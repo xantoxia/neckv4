@@ -170,17 +170,17 @@ if uploaded_file is not None:
     summarize_by_station(data)
 
     def generate_visualizations(data):
-        st.write("## 各工站数据可视化分析")
+        st.write("### 2.各工站数据可视化分析")
         
         # 按 '工站(w)' 分组
         grouped = data.groupby('工站(w)')
         
         # 遍历每个工站
-        for station, group_data in grouped:
-            st.write(f"### 工站 {station} 的数据可视化")
+        for i, (station, group_data) in enumerate(grouped, start=1):
+            st.write(f"###  2.{i}. {station} 工站的数据可视化")
             
             # ========= 1. 3D 散点图 =========
-            st.write("#### 3D 散点图")
+            st.write("#### 2.{i}. {station} 工站3D散点图")
             fig = plt.figure(figsize=(10, 7))
             ax = fig.add_subplot(111, projection='3d')
             
@@ -198,7 +198,7 @@ if uploaded_file is not None:
             ax.set_zlabel('肩部前屈角度(°)', fontproperties=simhei_font)
             
             # 设置图形标题
-            plt.title(f'工站 {station} 肩颈角度3D可视化散点图', fontproperties=simhei_font)
+            plt.title(f'2.{i}. {station} 工站作业人员肩颈角度3D可视化散点图', fontproperties=simhei_font)
             
             # 添加 colorbar
             cbar = fig.colorbar(scatter, ax=ax)
@@ -208,7 +208,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
             
             # 动态分析结论（3D散点图）
-            st.write(f"**工站 {station} 的动态分析结论（3D散点图）：**")
+            st.write(f"**2.{i}. {station} 工站的动态分析结论（3D散点图）：**")
             neck_Flexion_max = group_data['颈部角度(°)'].max()
             if neck_Flexion_max < 20:
                 st.write("- 作业时颈部角度处于20°之内，MSD风险较低。")
@@ -227,7 +227,7 @@ if uploaded_file is not None:
                 st.write("- 肩部外展角度的整体幅度较大，上臂作业时运动强度可能较高。")
             
             # ========= 2. 肩颈角度时间变化折线图 =========
-            st.write("#### 肩颈角度时间变化折线图（带水平预警线）")
+            st.write("#### 2.{i}. {station} 工站肩颈角度时间变化折线图")
             fig2, ax2 = plt.subplots(figsize=(10, 6))
             
             ax2.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)
@@ -240,13 +240,13 @@ if uploaded_file is not None:
             # 设置坐标轴和标题
             ax2.set_xlabel('时间(s)', fontproperties=simhei_font, fontsize=12)
             ax2.set_ylabel('角度(°)', fontproperties=simhei_font, fontsize=12)
-            ax2.set_title(f'工站 {station} 的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
+            ax2.set_title(f' {station} 工站的肩颈角度时间变化折线图', fontproperties=simhei_font, fontsize=12)
             ax2.legend(prop=simhei_font, fontsize=10)
             
             st.pyplot(fig2)
             
             # 动态分析结论（折线图）
-            st.write(f"**工站 {station} 的动态分析结论（折线图）：**")
+            st.write(f"**2.{i}. 工站 {station} 的动态分析结论（折线图）：**")
             
             # 颈部角度分析
             neck_exceed_count = (group_data['颈部角度(°)'] > 20).sum()

@@ -19,13 +19,13 @@ from matplotlib import font_manager
 from github import Github
 
 # 动态读取Token
-token = os.getenv("GITHUB_TOKEN")
+token = os.getenv("GITHUB_TOKEN1")
 if not token:
     st.error("GitHub Token 未设置。请在 Streamlit Cloud 的 Secrets 中添加 GITHUB_TOKEN。")
     st.stop()
 
 # GitHub 配置
-repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
+repo_name = "xantoxia/neckv4data"  # 替换为你的 GitHub 仓库
 repo_name1 = "xantoxia/neckv4data"  # 储存人因数据的GitHub 仓库
 MODELS_DIR = "models/"  # GitHub 仓库中模型文件存储路径
 DATA_DIR = "data/"     # GitHub 仓库中数据文件存储路径

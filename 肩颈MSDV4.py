@@ -491,7 +491,7 @@ if uploaded_file is not None:
     st.write("模型已训练并保存到本地临时路径。")
 
     # 上传新模型到 GitHub
-    upload_model_to_github(local_model_path, f"{MODELS_DIR}MSD-{timestamp}.joblib")
+    upload_model_to_github(local_model_path, f"{MODELS_DIR}{timestamp}-MSD.joblib")
     st.write("模型已保存并上传到 GitHub。")
     
     # 更新最新模型信息

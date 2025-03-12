@@ -130,7 +130,7 @@ if uploaded_file is not None:
     # 提取文件名并去掉扩展名
     csv_file_name = os.path.splitext(uploaded_file.name)[0]
      # 使用 HTML 格式设置字体颜色为蓝色
-    st.markdown(f"<h3 style='color:blue;'>{csv_file_name} 肩颈作业姿势分析</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color:blue;'><{csv_file_name}>  肩颈MSD风险评估分析</h3>", unsafe_allow_html=True)
 
     # 读取数据
     data = pd.read_csv(uploaded_file)

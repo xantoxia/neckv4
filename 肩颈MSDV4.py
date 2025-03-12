@@ -295,7 +295,7 @@ if uploaded_file is not None:
      # 综合分析
     def comprehensive_analysis_by_workstation(data, model):
 
-        st.write("### 3.1  机器学习AI模型分析结果")
+        st.write("### 3.  机器学习AI模型分析结果")
         
         # 按 '工站(w)' 分组
         grouped = data.groupby('工站(w)')
@@ -304,8 +304,8 @@ if uploaded_file is not None:
         total_abnormal_indices = []
     
         # 遍历每个工站的数据
-        for station, group_data in grouped:
-            st.write(f"#### 工站{station}的AI模型分析结果")
+        for i, (station, group_data) in grouped:
+            st.write(f"#### 3.{i} <{station}> 工站的AI模型分析结果")
         
            # 动态阈值计算
             neck_threshold = group_data['颈部角度(°)'].mean() + group_data['颈部角度(°)'].std()
@@ -316,7 +316,7 @@ if uploaded_file is not None:
             st.write(f"- **动态阈值**：肩部前屈 > {shoulder_threshold:.2f}° 为异常")
 
             # 特征重要性
-            st.write("##### 机器学习特征重要性")
+            st.write(f"##### 3.{i}.1 <{station}> 工站机器学习特征重要性")
             feature_importances = model.feature_importances_
             for name, importance in zip(group_data.columns[2:], feature_importances):
                 st.write(f"- {name}: {importance:.4f}")
@@ -326,10 +326,10 @@ if uploaded_file is not None:
             
             # AI模型检测结果
             abnormal_indices = []
-            st.write(f"##### 工站{station}的逐条数据AI分析检测结果")
+            st.write(f"##### 3.{i}.2 <{station}> 工站的逐条数据AI分析检测结果")
         
             # 前5条
-            st.write(f"###### 工站{station}的前5条数据检测结果：")
+            st.write(f"###### <{station}> 工站的前5条数据检测结果：")
             for i, row in group_data.iloc[:5].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
@@ -354,7 +354,7 @@ if uploaded_file is not None:
         
             # 中间数据折叠
             if len(group_data) > 10:
-                st.write(f"###### 工站{station}的中间数据检测结果：")
+                st.write(f"###### <{station}> 工站的中间数据检测结果：")
                 with st.expander(f"展开查看工站{station}的中间数据检测结果"):
                     for i, row in group_data.iloc[5:-5].iterrows():
                         rule_based_conclusion = "正常"
@@ -379,7 +379,7 @@ if uploaded_file is not None:
                             st.write(f"- 第 {i+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
             # 后5条
-            st.write(f"###### 工站{station}的后5条数据检测结果：")
+            st.write(f"###### <{station}> 工站的后5条数据检测结果：")
             for i, row in group_data.iloc[-5:].iterrows():
                 rule_based_conclusion = "正常"
                 if row['颈部角度(°)'] > neck_threshold:
@@ -404,9 +404,9 @@ if uploaded_file is not None:
     
             # 总结性描述
             if abnormal_indices:
-                st.write(f"##### 工站{station}总结：AI模型共检测到 {len(abnormal_indices)} 条异常数据。")
+                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型共检测到 {len(abnormal_indices)} 条异常数据。")
             else:
-                st.write(f"##### 工站{station}总结：AI模型未检测到异常数据。")
+                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型未检测到异常数据。")
         
              # 记录工站异常数据索引
             total_abnormal_indices.extend(abnormal_indices)

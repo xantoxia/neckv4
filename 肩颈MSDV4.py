@@ -138,7 +138,7 @@ if uploaded_file is not None:
                     '肩部外展角度(°)']
 
     # 显示数据预览
-    st.write("####   数据预览（用于检查是否正确加载数据）")
+    st.write("#####   数据预览（用于检查是否正确加载数据）")
     data_reset = data.copy()
     data_reset.index += 1
     data_reset.index.name = "序号"

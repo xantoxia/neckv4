@@ -304,7 +304,7 @@ if uploaded_file is not None:
         total_abnormal_indices = []
     
         # 遍历每个工站的数据
-        for station, group_data in grouped:
+        for i, (station, group_data) in enumerate(grouped, start=1):
             st.write(f"#### 3.{i} <{station}> 工站的AI模型分析结果")
         
            # 动态阈值计算

@@ -443,7 +443,7 @@ if uploaded_file is not None:
     # 调用函数生成图和结论
     total_abnormal_indices = comprehensive_analysis_by_workstation(data, model)
     
-    st.write("### 3.4  AI模型质量评估")
+    st.write("### 4.  AI模型质量评估")
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     y_pred = (model.predict_proba(X_test)[:, 1] >= 0.4).astype(int)
     y_prob = model.predict_proba(X_test)[:, 1]
@@ -482,8 +482,8 @@ if uploaded_file is not None:
     # 在Streamlit中显示图像
     st.pyplot(fig)
      
-    st.write("\n**AI模型优化建议**")
-    st.write(f"AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
+    st.write(f"#### AI模型优化建议")
+    st.write(f"###### AI模型AUC值为 {roc_auc:.2f}，最佳阈值为 {best_threshold:.2f}，可根据此阈值优化AI模型。")
     
      # 保存新模型到临时文件夹
     local_model_path = f"/tmp/{model_filename}"
@@ -501,5 +501,5 @@ if uploaded_file is not None:
     upload_model_to_github(latest_info_path, MODELS_DIR + latest_model_file, "更新最新模型信息")
     st.success("新模型已上传，并更新最新模型记录。")
 
-    st.write("#### 页面导出")
-    st.info("如需导出页面为 html 文件，请在浏览器中按 `Ctrl+S`，然后进行保存。")
+    st.write("### 分析结果页面导出")
+    st.info("如需导出页面为 html 文件，请按`Ctrl+S`快捷键，然后进行保存。")

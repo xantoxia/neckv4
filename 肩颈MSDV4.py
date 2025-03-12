@@ -35,7 +35,7 @@ latest_model_file = "latest_model_info.txt"  # 最新模型信息文件
 
 # 定义带时间戳的备份文件名
 timestamp = time.strftime("%Y%m%d-%H%M%S")
-model_filename = f"MSD-{timestamp}.joblib"
+model_filename = f"{timestamp}-MSD.joblib"
 
 # 上传模型文件到 GitHub
 def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):

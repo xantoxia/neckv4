@@ -138,7 +138,7 @@ if uploaded_file is not None:
                     '肩部外展角度(°)']
 
     # 显示数据预览
-    st.write("### 0.  数据预览（检查是否正确加载数据）")
+    st.write("####   数据预览（用于检查是否正确加载数据）")
     data_reset = data.copy()
     data_reset.index += 1
     data_reset.index.name = "序号"
@@ -177,10 +177,10 @@ if uploaded_file is not None:
         
         # 遍历每个工站
         for i, (station, group_data) in enumerate(grouped, start=1):
-            st.write(f"###  2.{i} <{station}> 工站的数据可视化")
+            st.write(f"####  2.{i} <{station}> 工站的数据可视化")
             
             # ========= 1. 3D 散点图 =========
-            st.write(f"#### 2.{i}.1 <{station}> 工站3D散点图")
+            st.write(f"##### 2.{i}.1 <{station}> 工站3D散点图")
             fig = plt.figure(figsize=(10, 7))
             ax = fig.add_subplot(111, projection='3d')
             
@@ -227,7 +227,7 @@ if uploaded_file is not None:
                 st.write("- 肩部外展角度的整体幅度较大，上臂作业时运动强度可能较高。")
             
             # ========= 2. 肩颈角度时间变化折线图 =========
-            st.write(f"#### 2.{i}.2 <{station}> 工站肩颈角度时间变化折线图")
+            st.write(f"##### 2.{i}.2 <{station}> 工站肩颈角度时间变化折线图")
             fig2, ax2 = plt.subplots(figsize=(10, 6))
             
             ax2.plot(group_data['时间(s)'], group_data['颈部角度(°)'], label='颈部角度(°)', color='blue', linewidth=2)

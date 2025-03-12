@@ -516,7 +516,7 @@ if uploaded_file is not None:
     st.write("模型已训练并保存到本地临时路径。")
 
     # 上传新模型到 GitHub
-    save_and_upload_new_model(model, model_filename, commit_message)
+    save_and_upload_new_model(model, model_filename, COMMIT_MSG_MODEL)
     st.write("模型已保存并上传到 GitHub。")
     
     st.write("#### 页面导出")

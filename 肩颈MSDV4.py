@@ -40,11 +40,9 @@ model_filename = f"MSD-{timestamp}.joblib"
 # 上传模型文件到 GitHub
 def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):
    # """模型文件专用上传函数（保留原有逻辑）"""
-    try:
-        github_path = f"{MODELS_DIR}{timestamp}_{model_filename.name}"
-        
-        g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(repo_name)
+    try:    
+        g = Github(os.getenv("GITHUB_TOKEN1"))
+        repo = g.get_repo(repo_name1)
         
         with open(file_path, "rb") as f:
             content = f.read()
@@ -65,8 +63,8 @@ def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):
 # 下载最新模型文件
 def download_latest_model_from_github():
     try:
-        g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(repo_name)
+        g = Github(os.getenv("GITHUB_TOKEN1"))
+        repo = g.get_repo(repo_name1)
 
         # 获取最新模型信息
         try:

@@ -138,7 +138,7 @@ if uploaded_file is not None:
                     '肩部外展角度(°)']
 
     # 显示数据预览
-    st.write("### 1.1  数据预览")
+    st.write("### 0.  数据预览（检查是否正确加载数据）")
     data_reset = data.copy()
     data_reset.index += 1
     data_reset.index.name = "序号"
@@ -146,10 +146,10 @@ if uploaded_file is not None:
 
     # 按工站汇总计算
     def summarize_by_station(data):
-        st.write("### 1.2  数据统计分析")
+        st.write("### 1.  各工站数据统计性分析")
     
         # 按 '工站(w)' 分组并计算统计特性
-        station_summary = data.groupby('工站(w)').agg({
+        station_summary = data.groupby('工站(w)', sort=False).agg({
             '时间(s)': ['count'],
             '颈部角度(°)': ['mean', 'min', 'max', 'std'],
             '肩部前屈角度(°)': ['mean', 'min', 'max', 'std'],

@@ -38,9 +38,11 @@ timestamp = time.strftime("%Y%m%d-%H%M%S")
 model_filename = f"MSD-{timestamp}.joblib"
 
 # 上传模型文件到 GitHub
-def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):
+def upload_model_to_github(file_path, github_path1, commit_msg=COMMIT_MSG_MODEL):
    # """模型文件专用上传函数（保留原有逻辑）"""
     try:
+        github_path1 = f"{MODELS_DIR}{timestamp}_{model_filename.name}"
+        
         g = Github(os.getenv("GITHUB_TOKEN1"))
         repo = g.get_repo(repo_name1)
         
@@ -49,12 +51,12 @@ def upload_model_to_github(file_path, github_path, commit_msg=COMMIT_MSG_MODEL):
             
         # 检查文件是否存在
         try:
-            file = repo.get_contents(github_path)
-            repo.update_file(github_path, COMMIT_MSG_MODEL, content, file.sha)
+            file = repo.get_contents(github_path1)
+            repo.update_file(github_path1, COMMIT_MSG_MODEL, content, file.sha)
         except:
-            repo.create_file(github_path, COMMIT_MSG_MODEL, content)
+            repo.create_file(github_path1, COMMIT_MSG_MODEL, content)
             
-        st.success(f"模型 {github_path} 上传成功")
+        st.success(f"模型 {github_path1} 上传成功")
         return True
     except Exception as e:
         st.error(f"模型上传失败: {str(e)}")

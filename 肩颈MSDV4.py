@@ -26,6 +26,7 @@ if not token:
 
 # GitHub 配置
 repo_name = "xantoxia/neckv4"  # 替换为你的 GitHub 仓库
+repo_name1 = "xantoxia/neckv4data"  # 储存人因数据的GitHub 仓库
 MODELS_DIR = "models/"  # GitHub 仓库中模型文件存储路径
 DATA_DIR = "data/"     # GitHub 仓库中数据文件存储路径
 COMMIT_MSG_MODEL = "从Streamlit更新模型文件"  # 模型文件提交信息
@@ -92,8 +93,8 @@ def upload_csv_to_github(uploaded_file):
         github_path = f"{DATA_DIR}{timestamp}_{uploaded_file.name}"
         content = uploaded_file.getvalue()  # 直接获取字节流‌:ml-citation{ref="1,2" data="citationList"}
         
-        g = Github(os.getenv("GITHUB_TOKEN"))
-        repo = g.get_repo(repo_name)
+        g = Github(os.getenv("GITHUB_TOKEN1"))
+        repo = g.get_repo(repo_name1)
         repo.create_file(github_path, COMMIT_MSG_DATA, content)
         
         st.success(f"CSV文件已存档至 {github_path}")

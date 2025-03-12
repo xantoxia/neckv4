@@ -108,7 +108,7 @@ plt.rcParams['font.family'] = simhei_font.get_name()  # 使用 SimHei 字体
 plt.rcParams['axes.unicode_minus'] = False  # 修复负号显示问题
 
 # Streamlit 标题
-st.title("肩颈MSD风险分析与角度异常检测")
+st.title("肩颈MSD风险评估分析工具")
 st.write("本人因AI工具结合MSD风险评估规则与机器学习模型，可以自动检测MSD风险并提供可视化分析。")
 
 # 模板下载

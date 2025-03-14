@@ -330,7 +330,8 @@ if uploaded_file is not None:
 
             # 在遍历每个工站数据前，初始化严重异常计数变量
             severe_count = 0
-
+            severe_indices = []
+            
             # 前5条
             st.write(f"###### <{station}> 工站的前5条数据检测结果：")
             for ii, row in group_data.iloc[:5].iterrows():
@@ -348,6 +349,7 @@ if uploaded_file is not None:
                 elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                     st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
                     severe_count += 1
+                    severe_indices.append(ii)
                 elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                     st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                 else:
@@ -372,6 +374,7 @@ if uploaded_file is not None:
                         elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                             st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
                             severe_count += 1
+                            severe_indices.append(ii)
                         elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                             st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                         else:
@@ -394,6 +397,7 @@ if uploaded_file is not None:
                 elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
                     st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
                     severe_count += 1
+                    severe_indices.append(ii)
                 elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                     st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
                 else:
@@ -401,10 +405,13 @@ if uploaded_file is not None:
                     
             # 计算比例：规则与机器学习一致检测为异常姿势的数据占该工站总数据的比例
             ratio = (severe_count / len(group_data)) * 100 if len(group_data) > 0 else 0
+
+            # 将序号列表转换为字符串（序号按人类习惯显示，从 1 开始）
+            indices_str = ", ".join(str(idx+1) for idx in severe_indices)
     
             # 总结性描述
             if severe_count > 0:
-                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型共检测到 {severe_count} 条问题可能较严重的异常数据，占总数据的 {ratio:.2f}%。")
+                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型共检测到 {severe_count} 条问题可能较严重的异常数据，占总数据的 {ratio:.2f}% （序号：{indices_str}）。")
             else:
                 st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型未检测与规则一致检测为异常姿势的数据。")
         

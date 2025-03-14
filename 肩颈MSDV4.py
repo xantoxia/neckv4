@@ -327,7 +327,10 @@ if uploaded_file is not None:
             # AI模型检测结果
             abnormal_indices = []
             st.write(f"##### 3.{i}.2 <{station}> 工站的逐条数据AI分析检测结果")
-        
+
+            # 在遍历每个工站数据前，初始化严重异常计数变量
+            severe_count = 0
+
             # 前5条
             st.write(f"###### <{station}> 工站的前5条数据检测结果：")
             for ii, row in group_data.iloc[:5].iterrows():
@@ -342,13 +345,11 @@ if uploaded_file is not None:
 
                 if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                     st.write(f"- 第 {ii+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
-                    abnormal_indices.append(ii)
                 elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
-                    st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
-                    abnormal_indices.append(ii)
+                    st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
+                    severe_count += 1
                 elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                     st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
-                    abnormal_indices.append(ii)
                 else:
                     st.write(f"- 第 {ii+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
@@ -368,13 +369,11 @@ if uploaded_file is not None:
 
                         if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                             st.write(f"- 第 {ii+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
-                            abnormal_indices.append(ii)
                         elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
-                            st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
-                            abnormal_indices.append(ii)
+                            st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
+                            severe_count += 1
                         elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                             st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
-                            abnormal_indices.append(ii)
                         else:
                             st.write(f"- 第 {ii+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
         
@@ -392,21 +391,22 @@ if uploaded_file is not None:
 
                 if rule_based_conclusion == "正常" and ml_conclusion == "异常":
                     st.write(f"- 第 {ii+1} 条数据：机器学习检测为异常姿势，但规则未发现，建议进一步分析。")
-                    abnormal_indices.append(ii)
                 elif rule_based_conclusion != "正常" and ml_conclusion == "异常":
-                    st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，问题可能较严重。")
-                    abnormal_indices.append(ii)
+                    st.write(f"- 第 {ii+1} 条数据：规则与机器学习一致检测为异常姿势，请注意问题可能较严重。")
+                    severe_count += 1
                 elif rule_based_conclusion != "正常" and ml_conclusion == "正常":
                     st.write(f"- 第 {ii+1} 条数据：规则检测为异常姿势，但机器学习未检测为异常，建议评估规则的适用性。")
-                    abnormal_indices.append(ii)
                 else:
                     st.write(f"- 第 {ii+1} 条数据：规则和机器学习均检测为正常姿势，无明显问题。")
+                    
+            # 计算比例：规则与机器学习一致检测为异常姿势的数据占该工站总数据的比例
+            ratio = (severe_count / len(group_data)) * 100 if len(group_data) > 0 else 0
     
             # 总结性描述
-            if abnormal_indices:
-                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型共检测到 {len(abnormal_indices)} 条异常数据。")
+            if severe_count > 0:
+                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型共检测到 {severe_count} 条问题可能较严重的异常数据，占总数据的 {ratio:.2f}%。")
             else:
-                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型未检测到异常数据。")
+                st.write(f"##### 3.{i}.3 <{station}> 工站总结：AI模型未检测与规则一致检测为异常姿势的数据。")
         
              # 记录工站异常数据索引
             total_abnormal_indices.extend(abnormal_indices)
